@@ -1,6 +1,5 @@
 using Newtonsoft.Json;
 using System;
-using WebVella.Erp.Plugins.TIMS.Model;
 
 namespace WebVella.Erp.Plugins.TIMS
 {
@@ -22,6 +21,16 @@ namespace WebVella.Erp.Plugins.TIMS
 				{
 					currentPluginSettings.Version = patchVersion;
 					Patch20250101();
+				}
+			}
+
+			//Patch 20250102 - Add missing required fields that were silently dropped in 20250101
+			{
+				var patchVersion = 20250102;
+				if (currentPluginSettings.Version < patchVersion)
+				{
+					currentPluginSettings.Version = patchVersion;
+					Patch20250102();
 				}
 			}
 

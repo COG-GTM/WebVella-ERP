@@ -1,0 +1,110 @@
+@using WebVella.Erp.Api.Models
+@{
+    ViewData["Title"] = "Travel Requests";
+    var travelRequests = (ViewData["TravelRequests"] as List<EntityRecord>) ?? new List<EntityRecord>();
+
+    decimal totalEstimated = travelRequests.Sum(r => (r["estimated_cost"] as decimal?) ?? 0m);
+    int approvedCount = travelRequests.Count(r => (r["status"] as string ?? "").Contains("approved", StringComparison.OrdinalIgnoreCase));
+    int pendingCount = travelRequests.Count(r => string.Equals(r["status"] as string, "submitted", StringComparison.OrdinalIgnoreCase));
+
+    string TrStatusClass(string s) => (s ?? "").ToLowerInvariant() switch
+    {
+        "submitted"          => "pill pill-amber",
+        "manager_approved"   => "pill pill-blue",
+        "finance_approved"   => "pill pill-violet",
+        "director_approved"  => "pill pill-green",
+        "rejected"           => "pill pill-red",
+        "cancelled"          => "pill pill-gray",
+        _                     => "pill pill-gray"
+    };
+}
+
+<div class="container-fluid">
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show mt-3" role="alert">
+            @TempData["Error"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <div class="page-header">
+        <div>
+            <h1><span class="page-icon bg-grad-red"><i class="fas fa-paper-plane"></i></span> Travel Requests</h1>
+            <div class="page-subtitle">Submit and authorize travel for upcoming missions.</div>
+        </div>
+        <a href="/" class="btn btn-outline-secondary btn-sm"><i class="fas fa-arrow-left me-1"></i> Back to Dashboard</a>
+    </div>
+
+    <div class="kpi-grid">
+        <div class="kpi">
+            <div class="kpi-icon bg-grad-red"><i class="fas fa-paper-plane"></i></div>
+            <div><div class="kpi-label">Total Requests</div><div class="kpi-value">@travelRequests.Count</div></div>
+        </div>
+        <div class="kpi">
+            <div class="kpi-icon bg-grad-amber"><i class="fas fa-hourglass-half"></i></div>
+            <div><div class="kpi-label">Pending</div><div class="kpi-value">@pendingCount</div></div>
+        </div>
+        <div class="kpi">
+            <div class="kpi-icon bg-grad-green"><i class="fas fa-check"></i></div>
+            <div><div class="kpi-label">Approved</div><div class="kpi-value">@approvedCount</div></div>
+        </div>
+        <div class="kpi">
+            <div class="kpi-icon bg-grad-blue"><i class="fas fa-dollar-sign"></i></div>
+            <div><div class="kpi-label">Estimated Cost</div><div class="kpi-value">@totalEstimated.ToString("C0")</div></div>
+        </div>
+    </div>
+
+    <div class="terp-card">
+        <div class="terp-card-header">
+            <h2><i class="fas fa-list me-2 text-muted"></i>All Travel Requests</h2>
+            <span class="pill pill-gray">@travelRequests.Count records</span>
+        </div>
+        <div class="terp-card-body">
+            @if (travelRequests.Count == 0)
+            {
+                <div class="empty-state">
+                    <div class="empty-illu"><i class="fas fa-suitcase-rolling"></i></div>
+                    <div class="empty-title">No travel requests</div>
+                    <div class="empty-sub">Submitted requests will appear here for review.</div>
+                </div>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Request #</th>
+                                <th>Traveler</th>
+                                <th>Destination</th>
+                                <th>Purpose</th>
+                                <th class="text-end">Estimated Cost</th>
+                                <th>Status</th>
+                                <th>Created</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var r in travelRequests)
+                            {
+                                var status = r["status"] as string ?? "";
+                                var statusLabel = status.Replace("_", " ");
+                                <tr>
+                                    <td><span class="mono">@r["request_number"]</span></td>
+                                    <td style="font-weight:500;">
+                                        <i class="fas fa-user-circle text-muted me-1"></i>@r["traveler_name"]
+                                    </td>
+                                    <td><i class="fas fa-map-marker-alt text-muted me-1"></i>@r["destination"]</td>
+                                    <td class="text-truncate" style="max-width:260px;">@r["purpose"]</td>
+                                    <td class="text-end text-money">@((r["estimated_cost"] as decimal?)?.ToString("C0"))</td>
+                                    <td><span class="@TrStatusClass(status)"><span class="dot"></span>@statusLabel</span></td>
+                                    <td class="text-muted">@((r["created_on"] as DateTime?)?.ToString("MMM dd, yyyy"))</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
+</div>

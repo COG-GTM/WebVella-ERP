@@ -1,66 +1,60 @@
 @page "/"
 @model WebVella.Erp.Site.TIMS.Pages.IndexModel
 @{
-    ViewData["Title"] = "TIMS Dashboard";
+    ViewData["Title"] = "Dashboard";
+    var error = TempData["Error"] as string;
+
+    var modules = new[] {
+        new { Url = "/Tims/Missions",        Icon = "fa-globe-americas", Grad = "bg-grad-blue",   Title = "Missions",         Desc = "Plan, track, and report on official travel missions." },
+        new { Url = "/Tims/TravelRequests",  Icon = "fa-paper-plane",    Grad = "bg-grad-red",    Title = "Travel Requests",  Desc = "Submit and authorize travel for upcoming missions." },
+        new { Url = "/Tims/Claims",          Icon = "fa-receipt",        Grad = "bg-grad-amber",  Title = "Claims",           Desc = "Process expense claims with three-way matching." },
+        new { Url = "/Tims/Payments",        Icon = "fa-university",     Grad = "bg-grad-teal",   Title = "Payments",         Desc = "Corporate banking and payment processing." },
+        new { Url = "/Tims/Budgets",         Icon = "fa-coins",          Grad = "bg-grad-green",  Title = "Budgets",          Desc = "Departmental allocations and consumption." },
+        new { Url = "/Tims/Approvals",       Icon = "fa-circle-check",   Grad = "bg-grad-violet", Title = "Approvals",        Desc = "Multi-level approval workflows and history." }
+    };
 }
 
-<div class="container-fluid mt-4">
-    <div class="row">
-        <div class="col-12">
-            <div class="card">
-                <div class="card-header">
-                    <h3 class="card-title">TIMS - Travel Information Management System</h3>
-                </div>
-                <div class="card-body">
-                    <div class="brand-logos-container" style="justify-content: flex-start; margin-bottom: 20px;">
-                        <img src="/_content/WebVella.Erp.Web/assets/imf-logo.svg" class="brand-logo-imf" alt="IMF" />
-                        <img src="/_content/WebVella.Erp.Web/assets/peoplesoft-logo.svg" class="brand-logo-peoplesoft" alt="PeopleSoft" />
-                    </div>
-                    <p class="card-text">
-                        Welcome to the Travel Information Management System. This system provides comprehensive 
-                        mission-based travel management with PeopleSoft Finance integration.
-                    </p>
-                    
-                    <div class="row mt-4">
-                        <div class="col-md-3">
-                            <div class="card text-center">
-                                <div class="card-body">
-                                    <i class="fas fa-globe-americas fa-3x" style="color: #003399;"></i>
-                                    <h5 class="card-title mt-3">Missions</h5>
-                                    <p class="card-text">Manage and track travel missions</p>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-3">
-                            <div class="card text-center">
-                                <div class="card-body">
-                                    <i class="fas fa-file-alt fa-3x" style="color: #CC0000;"></i>
-                                    <h5 class="card-title mt-3">Travel Requests</h5>
-                                    <p class="card-text">Submit and authorize travel requests</p>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-3">
-                            <div class="card text-center">
-                                <div class="card-body">
-                                    <i class="fas fa-receipt fa-3x" style="color: #FF9800;"></i>
-                                    <h5 class="card-title mt-3">Claims</h5>
-                                    <p class="card-text">Process expense claims with three-way matching</p>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-3">
-                            <div class="card text-center">
-                                <div class="card-body">
-                                    <i class="fas fa-university fa-3x" style="color: #FF5722;"></i>
-                                    <h5 class="card-title mt-3">Payments</h5>
-                                    <p class="card-text">Corporate banking and payment processing</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+<div class="container-fluid">
+    @if (!string.IsNullOrEmpty(error))
+    {
+        <div class="alert alert-danger alert-dismissible fade show mt-3" role="alert">
+            @error
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <div class="page-header">
+        <div>
+            <h1>
+                <span class="page-icon bg-grad-blue"><i class="fas fa-plane-departure"></i></span>
+                Travel ERP
+            </h1>
+            <div class="page-subtitle">Mission-based travel management with PeopleSoft Finance integration.</div>
         </div>
     </div>
+
+    <div class="row g-3">
+        @foreach (var m in modules)
+        {
+            <div class="col-12 col-sm-6 col-lg-4">
+                <a href="@m.Url" class="text-decoration-none">
+                    <div class="terp-card h-100 module-card" style="transition: transform .15s ease, box-shadow .15s ease;">
+                        <div class="d-flex align-items-start gap-3 p-4">
+                            <span class="page-icon @m.Grad" style="width:48px; height:48px; flex:0 0 48px; font-size:1.15rem;">
+                                <i class="fas @m.Icon"></i>
+                            </span>
+                            <div>
+                                <div style="font-size:1.05rem; font-weight:600; color:#111827;">@m.Title</div>
+                                <div style="font-size:.875rem; color:#6b7280; margin-top:.15rem;">@m.Desc</div>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        }
+    </div>
 </div>
+
+<style>
+    .module-card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(16,24,40,.10); }
+</style>

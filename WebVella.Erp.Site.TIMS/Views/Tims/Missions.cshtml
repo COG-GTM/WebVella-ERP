@@ -1,0 +1,107 @@
+@using WebVella.Erp.Api.Models
+@{
+    ViewData["Title"] = "Missions";
+    var missions = (ViewData["Missions"] as List<EntityRecord>) ?? new List<EntityRecord>();
+
+    decimal totalBudget = missions.Sum(m => (m["budget_amount"] as decimal?) ?? 0m);
+    int activeCount = missions.Count(m => string.Equals(m["status"] as string, "active", StringComparison.OrdinalIgnoreCase));
+    int completedCount = missions.Count(m => string.Equals(m["status"] as string, "completed", StringComparison.OrdinalIgnoreCase));
+
+    string MissionStatusClass(string s) => (s ?? "").ToLowerInvariant() switch
+    {
+        "active"    => "pill pill-blue",
+        "approved"  => "pill pill-green",
+        "planned"   => "pill pill-amber",
+        "completed" => "pill pill-gray",
+        "cancelled" => "pill pill-red",
+        _            => "pill pill-gray"
+    };
+}
+
+<div class="container-fluid">
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show mt-3" role="alert">
+            @TempData["Error"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <div class="page-header">
+        <div>
+            <h1><span class="page-icon bg-grad-blue"><i class="fas fa-globe-americas"></i></span> Missions</h1>
+            <div class="page-subtitle">Plan, track, and report on official travel missions.</div>
+        </div>
+        <a href="/" class="btn btn-outline-secondary btn-sm"><i class="fas fa-arrow-left me-1"></i> Back to Dashboard</a>
+    </div>
+
+    <div class="kpi-grid">
+        <div class="kpi">
+            <div class="kpi-icon bg-grad-blue"><i class="fas fa-globe-americas"></i></div>
+            <div><div class="kpi-label">Total Missions</div><div class="kpi-value">@missions.Count</div></div>
+        </div>
+        <div class="kpi">
+            <div class="kpi-icon bg-grad-green"><i class="fas fa-bolt"></i></div>
+            <div><div class="kpi-label">Active</div><div class="kpi-value">@activeCount</div></div>
+        </div>
+        <div class="kpi">
+            <div class="kpi-icon bg-grad-violet"><i class="fas fa-flag-checkered"></i></div>
+            <div><div class="kpi-label">Completed</div><div class="kpi-value">@completedCount</div></div>
+        </div>
+        <div class="kpi">
+            <div class="kpi-icon bg-grad-teal"><i class="fas fa-coins"></i></div>
+            <div><div class="kpi-label">Total Budget</div><div class="kpi-value">@totalBudget.ToString("C0")</div></div>
+        </div>
+    </div>
+
+    <div class="terp-card">
+        <div class="terp-card-header">
+            <h2><i class="fas fa-list me-2 text-muted"></i>All Missions</h2>
+            <span class="pill pill-gray">@missions.Count records</span>
+        </div>
+        <div class="terp-card-body">
+            @if (missions.Count == 0)
+            {
+                <div class="empty-state">
+                    <div class="empty-illu"><i class="fas fa-paper-plane"></i></div>
+                    <div class="empty-title">No missions yet</div>
+                    <div class="empty-sub">When missions are created, they'll show up here.</div>
+                </div>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Mission Code</th>
+                                <th>Title</th>
+                                <th>Type</th>
+                                <th>Start</th>
+                                <th>End</th>
+                                <th class="text-end">Budget</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var m in missions)
+                            {
+                                var status = m["status"] as string ?? "";
+                                var type = (m["mission_type"] as string ?? "").Replace("_", " ");
+                                <tr>
+                                    <td><span class="mono">@m["mission_code"]</span></td>
+                                    <td style="font-weight:500;">@m["title"]</td>
+                                    <td><span class="pill pill-gray" style="text-transform:capitalize;">@type</span></td>
+                                    <td>@((m["start_date"] as DateTime?)?.ToString("MMM dd, yyyy"))</td>
+                                    <td>@((m["end_date"] as DateTime?)?.ToString("MMM dd, yyyy"))</td>
+                                    <td class="text-end text-money">@((m["budget_amount"] as decimal?)?.ToString("C0"))</td>
+                                    <td><span class="@MissionStatusClass(status)"><span class="dot"></span>@status</span></td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
+</div>

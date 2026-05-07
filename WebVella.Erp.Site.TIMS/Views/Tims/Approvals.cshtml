@@ -1,0 +1,112 @@
+@using WebVella.Erp.Api.Models
+@{
+    ViewData["Title"] = "Approvals";
+    var approvals = (ViewData["Approvals"] as List<EntityRecord>) ?? new List<EntityRecord>();
+
+    int approvedCount = approvals.Count(a => string.Equals(a["status"] as string, "approved", StringComparison.OrdinalIgnoreCase));
+    int pendingCount = approvals.Count(a => string.Equals(a["status"] as string, "pending", StringComparison.OrdinalIgnoreCase));
+    int rejectedCount = approvals.Count(a => string.Equals(a["status"] as string, "rejected", StringComparison.OrdinalIgnoreCase));
+
+    string ApprovalStatusClass(string s) => (s ?? "").ToLowerInvariant() switch
+    {
+        "approved" => "pill pill-green",
+        "pending"  => "pill pill-amber",
+        "rejected" => "pill pill-red",
+        _           => "pill pill-gray"
+    };
+    string RoleClass(string r) => (r ?? "").ToLowerInvariant() switch
+    {
+        "manager"  => "pill pill-blue",
+        "finance"  => "pill pill-violet",
+        "director" => "pill pill-pink",
+        _           => "pill pill-gray"
+    };
+}
+
+<div class="container-fluid">
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show mt-3" role="alert">
+            @TempData["Error"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <div class="page-header">
+        <div>
+            <h1><span class="page-icon bg-grad-violet"><i class="fas fa-circle-check"></i></span> Approvals</h1>
+            <div class="page-subtitle">Multi-level approval workflows and history.</div>
+        </div>
+        <a href="/" class="btn btn-outline-secondary btn-sm"><i class="fas fa-arrow-left me-1"></i> Back to Dashboard</a>
+    </div>
+
+    <div class="kpi-grid">
+        <div class="kpi" style="color: var(--tint-violet-ink);">
+            <div class="kpi-icon bg-grad-violet"><i class="fas fa-stamp"></i></div>
+            <div><div class="kpi-label">Total</div><div class="kpi-value">@approvals.Count</div></div>
+        </div>
+        <div class="kpi" style="color: var(--tint-amber-ink);">
+            <div class="kpi-icon bg-grad-amber"><i class="fas fa-hourglass-half"></i></div>
+            <div><div class="kpi-label">Pending</div><div class="kpi-value">@pendingCount</div></div>
+        </div>
+        <div class="kpi" style="color: var(--tint-green-ink);">
+            <div class="kpi-icon bg-grad-green"><i class="fas fa-thumbs-up"></i></div>
+            <div><div class="kpi-label">Approved</div><div class="kpi-value">@approvedCount</div></div>
+        </div>
+        <div class="kpi" style="color: var(--tint-red-ink);">
+            <div class="kpi-icon bg-grad-red"><i class="fas fa-thumbs-down"></i></div>
+            <div><div class="kpi-label">Rejected</div><div class="kpi-value">@rejectedCount</div></div>
+        </div>
+    </div>
+
+    <div class="terp-card">
+        <div class="terp-card-header">
+            <h2><i class="fas fa-list text-muted"></i>Approval History</h2>
+            <span class="pill pill-gray">@approvals.Count records</span>
+        </div>
+        <div class="terp-card-body">
+            @if (approvals.Count == 0)
+            {
+                <div class="empty-state">
+                    <div class="empty-illu"><i class="fas fa-circle-check"></i></div>
+                    <div class="empty-title">All caught up!</div>
+                    <div class="empty-sub">No approvals waiting on you right now.</div>
+                </div>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Entity</th>
+                                <th>Approver</th>
+                                <th>Role</th>
+                                <th>Status</th>
+                                <th>Comments</th>
+                                <th>Decided</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var a in approvals)
+                            {
+                                var status = a["status"] as string ?? "";
+                                var role = a["approver_role"] as string ?? "";
+                                <tr>
+                                    <td><span class="mono">@a["entity_type"]</span></td>
+                                    <td style="font-weight:500;">
+                                        <i class="fas fa-user-circle text-muted me-1"></i>@a["approver_name"]
+                                    </td>
+                                    <td><span class="@RoleClass(role)">@role</span></td>
+                                    <td><span class="@ApprovalStatusClass(status)"><span class="dot"></span>@status</span></td>
+                                    <td class="text-muted text-truncate" style="max-width:280px;">@a["comments"]</td>
+                                    <td class="text-muted">@((a["decided_on"] as DateTime?)?.ToString("MMM dd, yyyy"))</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
+</div>

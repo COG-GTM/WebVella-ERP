@@ -1,0 +1,101 @@
+@using WebVella.Erp.Api.Models
+@{
+    ViewData["Title"] = "Budgets";
+    var budgets = (ViewData["Budgets"] as List<EntityRecord>) ?? new List<EntityRecord>();
+
+    decimal totalAllocated = budgets.Sum(b => (b["allocated_amount"] as decimal?) ?? (b["amount"] as decimal?) ?? 0m);
+    decimal totalConsumed = budgets.Sum(b => (b["consumed_amount"] as decimal?) ?? (b["spent_amount"] as decimal?) ?? 0m);
+    decimal totalRemaining = totalAllocated - totalConsumed;
+    int departmentCount = budgets.Select(b => b["department"] as string ?? "").Distinct().Count();
+}
+
+<div class="container-fluid">
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show mt-3" role="alert">
+            @TempData["Error"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <div class="page-header">
+        <div>
+            <h1><span class="page-icon bg-grad-green"><i class="fas fa-coins"></i></span> Budgets</h1>
+            <div class="page-subtitle">Departmental allocations, consumption, and headroom.</div>
+        </div>
+        <a href="/" class="btn btn-outline-secondary btn-sm"><i class="fas fa-arrow-left me-1"></i> Back to Dashboard</a>
+    </div>
+
+    <div class="kpi-grid">
+        <div class="kpi" style="color: var(--tint-green-ink);">
+            <div class="kpi-icon bg-grad-green"><i class="fas fa-coins"></i></div>
+            <div><div class="kpi-label">Allocated</div><div class="kpi-value">@totalAllocated.ToString("C0")</div></div>
+        </div>
+        <div class="kpi" style="color: var(--tint-amber-ink);">
+            <div class="kpi-icon bg-grad-amber"><i class="fas fa-fire"></i></div>
+            <div><div class="kpi-label">Consumed</div><div class="kpi-value">@totalConsumed.ToString("C0")</div></div>
+        </div>
+        <div class="kpi" style="color: var(--tint-blue-ink);">
+            <div class="kpi-icon bg-grad-blue"><i class="fas fa-piggy-bank"></i></div>
+            <div><div class="kpi-label">Remaining</div><div class="kpi-value">@totalRemaining.ToString("C0")</div></div>
+        </div>
+        <div class="kpi" style="color: var(--tint-violet-ink);">
+            <div class="kpi-icon bg-grad-violet"><i class="fas fa-sitemap"></i></div>
+            <div><div class="kpi-label">Departments</div><div class="kpi-value">@departmentCount</div></div>
+        </div>
+    </div>
+
+    <div class="terp-card">
+        <div class="terp-card-header">
+            <h2><i class="fas fa-list text-muted"></i>Budget Allocations</h2>
+            <span class="pill pill-gray">@budgets.Count records</span>
+        </div>
+        <div class="terp-card-body">
+            @if (budgets.Count == 0)
+            {
+                <div class="empty-state">
+                    <div class="empty-illu"><i class="fas fa-coins"></i></div>
+                    <div class="empty-title">No budgets to show yet</div>
+                    <div class="empty-sub">Once departments allocate funds, you'll see them here.</div>
+                </div>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Department</th>
+                                <th>Fiscal Year</th>
+                                <th class="text-end">Allocated</th>
+                                <th class="text-end">Consumed</th>
+                                <th style="min-width:180px;">Utilization</th>
+                                <th class="text-end">Remaining</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var b in budgets)
+                            {
+                                var allocated = (b["allocated_amount"] as decimal?) ?? (b["amount"] as decimal?) ?? 0m;
+                                var consumed = (b["consumed_amount"] as decimal?) ?? (b["spent_amount"] as decimal?) ?? 0m;
+                                var pct = allocated > 0 ? Math.Min((double)(consumed / allocated) * 100.0, 100.0) : 0.0;
+                                var meterClass = pct >= 100 ? "meter over" : pct >= 80 ? "meter warn" : "meter";
+                                <tr>
+                                    <td style="font-weight:500;">@b["department"]</td>
+                                    <td><span class="mono">@b["fiscal_year"]</span></td>
+                                    <td class="text-end text-money">@allocated.ToString("C0")</td>
+                                    <td class="text-end text-money-muted">@consumed.ToString("C0")</td>
+                                    <td>
+                                        <div class="@meterClass"><span style="width:@pct.ToString("0.##")%;"></span></div>
+                                        <div class="text-muted" style="font-size:.72rem; margin-top:.25rem;">@pct.ToString("0.#")% used</div>
+                                    </td>
+                                    <td class="text-end text-money">@((allocated - consumed).ToString("C0"))</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
+</div>

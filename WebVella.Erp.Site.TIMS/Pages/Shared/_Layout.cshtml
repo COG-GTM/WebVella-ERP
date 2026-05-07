@@ -3,36 +3,228 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - TIMS</title>
+    <title>@ViewData["Title"] - Travel ERP</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
     <style>
+        :root {
+            --terp-primary: #003399;
+            --terp-primary-dark: #00277a;
+            --terp-accent: #00B5C7;
+            --terp-bg: #f6f4fb;
+            --terp-card-shadow: 0 1px 2px rgba(16,24,40,.03), 0 6px 20px rgba(80,72,160,.08);
+            --terp-card-shadow-hover: 0 10px 28px rgba(80,72,160,.14);
+            --terp-border: #ece9f5;
+
+            /* Soft pastel tints (background + matching icon ink) */
+            --tint-blue-bg:   #e8f0ff;  --tint-blue-ink:   #2563eb;
+            --tint-red-bg:    #ffe8ee;  --tint-red-ink:    #e11d48;
+            --tint-amber-bg:  #fff3d6;  --tint-amber-ink:  #d97706;
+            --tint-teal-bg:   #def7fb;  --tint-teal-ink:   #0891b2;
+            --tint-violet-bg: #efe7ff;  --tint-violet-ink: #7c3aed;
+            --tint-green-bg:  #def9ec;  --tint-green-ink:  #059669;
+            --tint-pink-bg:   #ffe4f1;  --tint-pink-ink:   #db2777;
+        }
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background:
+                radial-gradient(900px 500px at 100% -10%, #efe7ff 0%, transparent 60%),
+                radial-gradient(700px 400px at -10% 110%, #def7fb 0%, transparent 55%),
+                var(--terp-bg);
+            color: #1f2937;
+            min-height: 100vh;
+        }
         .brand-logos-container {
             display: flex;
             align-items: center;
             gap: 15px;
             margin-bottom: 5px;
         }
-        .brand-logo-imf {
-            height: 40px;
-            width: auto;
-            max-width: 120px;
+        .brand-logo-imf { height: 40px; width: auto; max-width: 120px; }
+        .brand-logo-peoplesoft { height: 40px; width: auto; max-width: 150px; }
+
+        .navbar-brand { font-weight: 700; letter-spacing: .3px; }
+        .navbar .nav-link { font-weight: 500; opacity: .85; }
+        .navbar .nav-link:hover { opacity: 1; }
+
+        /* Page header */
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 1.5rem 0 1.25rem;
+            gap: 1rem;
+            flex-wrap: wrap;
         }
-        .brand-logo-peoplesoft {
-            height: 40px;
-            width: auto;
-            max-width: 150px;
+        .page-header h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: .65rem;
         }
+        .page-header h1 .page-icon {
+            width: 44px; height: 44px;
+            border-radius: 14px;
+            display: inline-flex;
+            align-items: center; justify-content: center;
+            font-size: 1.1rem;
+            box-shadow: 0 4px 12px rgba(80,72,160,.12);
+        }
+        .page-subtitle { color: #6b7280; font-size: .92rem; margin-top: .25rem; }
+
+        /* KPI cards */
+        .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 1rem; margin-bottom: 1.25rem; }
+        .kpi {
+            position: relative;
+            background: #fff;
+            border: 1px solid var(--terp-border);
+            border-radius: 18px;
+            padding: 1.1rem 1.15rem;
+            box-shadow: var(--terp-card-shadow);
+            display: flex; align-items: center; gap: .9rem;
+            transition: transform .18s ease, box-shadow .18s ease;
+            overflow: hidden;
+        }
+        .kpi::after {
+            content: "";
+            position: absolute; right: -28px; top: -28px;
+            width: 90px; height: 90px;
+            border-radius: 50%;
+            background: currentColor;
+            opacity: .06;
+        }
+        .kpi:hover { transform: translateY(-3px); box-shadow: var(--terp-card-shadow-hover); }
+        .kpi-icon {
+            width: 46px; height: 46px;
+            border-radius: 14px;
+            display: inline-flex; align-items: center; justify-content: center;
+            font-size: 1.15rem;
+            flex: 0 0 46px;
+        }
+        .kpi-label { font-size: .72rem; text-transform: uppercase; letter-spacing: .06em; color: #6b7280; font-weight: 600; }
+        .kpi-value { font-size: 1.4rem; font-weight: 700; color: #111827; line-height: 1.15; font-variant-numeric: tabular-nums; }
+
+        /* Modern card */
+        .terp-card {
+            background: #fff;
+            border: 1px solid var(--terp-border);
+            border-radius: 20px;
+            box-shadow: var(--terp-card-shadow);
+            overflow: hidden;
+        }
+        .terp-card-header {
+            padding: 1.1rem 1.35rem;
+            border-bottom: 1px solid var(--terp-border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+            background: linear-gradient(180deg,#fbfaff 0%,#ffffff 100%);
+        }
+        .terp-card-header h2 {
+            font-size: 1.05rem; font-weight: 600; margin: 0; display:inline-flex; align-items:center; gap:.5rem;
+        }
+        .terp-card-body { padding: 0; }
+
+        /* Tables */
+        .terp-card .table { margin-bottom: 0; }
+        .terp-card .table thead th {
+            background: #f9fafc;
+            border-bottom: 1px solid var(--terp-border);
+            border-top: 0;
+            color: #6b7280;
+            font-size: .72rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: .05em;
+            padding: .85rem 1rem;
+            white-space: nowrap;
+        }
+        .terp-card .table tbody td {
+            padding: .9rem 1rem;
+            vertical-align: middle;
+            border-top: 1px solid #f1f3f8;
+            font-size: .9rem;
+        }
+        .terp-card .table tbody tr:hover { background: #fafbff; }
+        .terp-card .table tbody tr:first-child td { border-top: 0; }
+
+        .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .85rem; color: #374151; }
+
+        /* Status pills */
+        .pill {
+            display: inline-flex; align-items: center; gap: .4rem;
+            padding: .3rem .65rem;
+            border-radius: 999px;
+            font-size: .72rem;
+            font-weight: 600;
+            letter-spacing: .02em;
+            text-transform: capitalize;
+            border: 1px solid transparent;
+            white-space: nowrap;
+        }
+        .pill .dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; box-shadow: 0 0 0 3px rgba(0,0,0,.04); }
+        .pill-gray   { background: #f3f1fa; color: #5b5b78; border-color: #e8e5f3; }
+        .pill-blue   { background: var(--tint-blue-bg);   color: var(--tint-blue-ink);   border-color: #d6e2ff; }
+        .pill-green  { background: var(--tint-green-bg);  color: var(--tint-green-ink);  border-color: #c6efd9; }
+        .pill-amber  { background: var(--tint-amber-bg);  color: var(--tint-amber-ink);  border-color: #ffe6b3; }
+        .pill-red    { background: var(--tint-red-bg);    color: var(--tint-red-ink);    border-color: #fbcfd8; }
+        .pill-violet { background: var(--tint-violet-bg); color: var(--tint-violet-ink); border-color: #ddd0ff; }
+        .pill-teal   { background: var(--tint-teal-bg);   color: var(--tint-teal-ink);   border-color: #bfeaf3; }
+        .pill-pink   { background: var(--tint-pink-bg);   color: var(--tint-pink-ink);   border-color: #ffd1e4; }
+
+        /* Cute empty state */
+        .empty-state {
+            text-align: center;
+            padding: 3.5rem 1rem 3rem;
+            color: #6b7280;
+        }
+        .empty-state .empty-illu {
+            width: 84px; height: 84px;
+            margin: 0 auto .9rem;
+            border-radius: 50%;
+            display: inline-flex; align-items: center; justify-content: center;
+            background: linear-gradient(135deg,#efe7ff,#def7fb);
+            color: #7c3aed;
+            font-size: 2rem;
+            box-shadow: inset 0 -6px 14px rgba(124,58,237,.08);
+            animation: floaty 3.6s ease-in-out infinite;
+        }
+        .empty-state .empty-title { font-weight: 600; color: #374151; }
+        .empty-state .empty-sub { font-size: .88rem; margin-top: .25rem; }
+        @@keyframes floaty {
+            0%,100% { transform: translateY(0) rotate(-2deg); }
+            50%     { transform: translateY(-4px) rotate(2deg); }
+        }
+
+        .text-money { font-variant-numeric: tabular-nums; font-weight: 600; color: #111827; }
+        .text-money-muted { font-variant-numeric: tabular-nums; color: #6b7280; }
+
+        /* Pastel tint utilities (replace the old bold gradients) */
+        .bg-grad-blue   { background: var(--tint-blue-bg);   color: var(--tint-blue-ink); }
+        .bg-grad-red    { background: var(--tint-red-bg);    color: var(--tint-red-ink); }
+        .bg-grad-amber  { background: var(--tint-amber-bg);  color: var(--tint-amber-ink); }
+        .bg-grad-teal   { background: var(--tint-teal-bg);   color: var(--tint-teal-ink); }
+        .bg-grad-violet { background: var(--tint-violet-bg); color: var(--tint-violet-ink); }
+        .bg-grad-green  { background: var(--tint-green-bg);  color: var(--tint-green-ink); }
+        .bg-grad-pink   { background: var(--tint-pink-bg);   color: var(--tint-pink-ink); }
+
+        /* Cute progress meter */
+        .meter { height: 8px; background: #f1eef9; border-radius: 999px; overflow: hidden; }
+        .meter > span { display:block; height: 100%; border-radius: 999px;
+            background: linear-gradient(90deg,#a78bfa,#60a5fa); transition: width .5s ease; }
+        .meter.warn > span { background: linear-gradient(90deg,#fbbf24,#fb923c); }
+        .meter.over > span { background: linear-gradient(90deg,#fb7185,#ef4444); }
     </style>
 </head>
 <body>
     <nav class="navbar navbar-expand-lg navbar-dark" style="background-color: #003399;">
         <div class="container-fluid">
-            <div class="brand-logos-container">
-                <img src="/_content/WebVella.Erp.Web/assets/imf-logo.svg" class="brand-logo-imf" alt="IMF" />
-                <img src="/_content/WebVella.Erp.Web/assets/peoplesoft-logo.svg" class="brand-logo-peoplesoft" alt="PeopleSoft" />
-            </div>
-            <a class="navbar-brand" href="/">TIMS</a>
+            <a class="navbar-brand" href="/">Travel ERP</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>

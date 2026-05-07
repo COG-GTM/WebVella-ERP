@@ -1,0 +1,122 @@
+@using WebVella.Erp.Api.Models
+@{
+    ViewData["Title"] = "Payments";
+    var payments = (ViewData["Payments"] as List<EntityRecord>) ?? new List<EntityRecord>();
+
+    decimal totalPaid = payments
+        .Where(p => string.Equals(p["status"] as string, "completed", StringComparison.OrdinalIgnoreCase))
+        .Sum(p => (p["payment_amount"] as decimal?) ?? 0m);
+    int completedCount = payments.Count(p => string.Equals(p["status"] as string, "completed", StringComparison.OrdinalIgnoreCase));
+    int pendingCount = payments.Count(p => string.Equals(p["status"] as string, "pending", StringComparison.OrdinalIgnoreCase));
+
+    string PayStatusClass(string s) => (s ?? "").ToLowerInvariant() switch
+    {
+        "completed" => "pill pill-green",
+        "pending"   => "pill pill-amber",
+        "failed"    => "pill pill-red",
+        "cancelled" => "pill pill-gray",
+        _            => "pill pill-gray"
+    };
+    string MethodClass(string s) => (s ?? "").ToLowerInvariant() switch
+    {
+        "wire"      => "pill pill-blue",
+        "etransfer" => "pill pill-teal",
+        "cheque"    => "pill pill-violet",
+        "cash"      => "pill pill-amber",
+        _            => "pill pill-gray"
+    };
+    string MethodIcon(string s) => (s ?? "").ToLowerInvariant() switch
+    {
+        "wire"      => "fa-network-wired",
+        "etransfer" => "fa-paper-plane",
+        "cheque"    => "fa-money-check",
+        "cash"      => "fa-money-bill",
+        _            => "fa-credit-card"
+    };
+}
+
+<div class="container-fluid">
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show mt-3" role="alert">
+            @TempData["Error"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <div class="page-header">
+        <div>
+            <h1><span class="page-icon bg-grad-teal"><i class="fas fa-university"></i></span> Payments</h1>
+            <div class="page-subtitle">Corporate banking and payment processing.</div>
+        </div>
+        <a href="/" class="btn btn-outline-secondary btn-sm"><i class="fas fa-arrow-left me-1"></i> Back to Dashboard</a>
+    </div>
+
+    <div class="kpi-grid">
+        <div class="kpi">
+            <div class="kpi-icon bg-grad-teal"><i class="fas fa-university"></i></div>
+            <div><div class="kpi-label">Total Payments</div><div class="kpi-value">@payments.Count</div></div>
+        </div>
+        <div class="kpi">
+            <div class="kpi-icon bg-grad-green"><i class="fas fa-check-circle"></i></div>
+            <div><div class="kpi-label">Completed</div><div class="kpi-value">@completedCount</div></div>
+        </div>
+        <div class="kpi">
+            <div class="kpi-icon bg-grad-amber"><i class="fas fa-clock"></i></div>
+            <div><div class="kpi-label">Pending</div><div class="kpi-value">@pendingCount</div></div>
+        </div>
+        <div class="kpi">
+            <div class="kpi-icon bg-grad-blue"><i class="fas fa-money-bill-wave"></i></div>
+            <div><div class="kpi-label">Total Disbursed</div><div class="kpi-value">@totalPaid.ToString("C0")</div></div>
+        </div>
+    </div>
+
+    <div class="terp-card">
+        <div class="terp-card-header">
+            <h2><i class="fas fa-list me-2 text-muted"></i>All Payments</h2>
+            <span class="pill pill-gray">@payments.Count records</span>
+        </div>
+        <div class="terp-card-body">
+            @if (payments.Count == 0)
+            {
+                <div class="empty-state">
+                    <div class="empty-illu"><i class="fas fa-piggy-bank"></i></div>
+                    <div class="empty-title">No payments yet</div>
+                    <div class="empty-sub">Disbursements will show up once issued.</div>
+                </div>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Payment #</th>
+                                <th class="text-end">Amount</th>
+                                <th>Method</th>
+                                <th>Payment Date</th>
+                                <th>Status</th>
+                                <th>PeopleSoft ID</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var p in payments)
+                            {
+                                var status = p["status"] as string ?? "";
+                                var method = p["payment_method"] as string ?? "";
+                                <tr>
+                                    <td><span class="mono">@p["payment_number"]</span></td>
+                                    <td class="text-end text-money">@((p["payment_amount"] as decimal?)?.ToString("C0"))</td>
+                                    <td><span class="@MethodClass(method)"><i class="fas @MethodIcon(method)"></i> @method</span></td>
+                                    <td>@((p["payment_date"] as DateTime?)?.ToString("MMM dd, yyyy"))</td>
+                                    <td><span class="@PayStatusClass(status)"><span class="dot"></span>@status</span></td>
+                                    <td><span class="mono text-muted">@p["peoplesoft_payment_id"]</span></td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
+</div>

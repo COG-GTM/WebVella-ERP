@@ -1,0 +1,117 @@
+@using WebVella.Erp.Api.Models
+@{
+    ViewData["Title"] = "Claims";
+    var claims = (ViewData["Claims"] as List<EntityRecord>) ?? new List<EntityRecord>();
+
+    decimal totalClaimed = claims.Sum(c => (c["claim_amount"] as decimal?) ?? 0m);
+    decimal totalInvoiced = claims.Sum(c => (c["invoice_amount"] as decimal?) ?? 0m);
+    int matchedCount = claims.Count(c => string.Equals(c["match_status"] as string, "matched", StringComparison.OrdinalIgnoreCase));
+    int paidCount = claims.Count(c => string.Equals(c["status"] as string, "paid", StringComparison.OrdinalIgnoreCase));
+
+    string ClaimStatusClass(string s) => (s ?? "").ToLowerInvariant() switch
+    {
+        "submitted"     => "pill pill-amber",
+        "under_review"  => "pill pill-violet",
+        "approved"      => "pill pill-green",
+        "paid"          => "pill pill-blue",
+        "rejected"      => "pill pill-red",
+        _                => "pill pill-gray"
+    };
+    string MatchClass(string s) => (s ?? "").ToLowerInvariant() switch
+    {
+        "matched"   => "pill pill-green",
+        "variance"  => "pill pill-amber",
+        "mismatch"  => "pill pill-red",
+        _            => "pill pill-gray"
+    };
+}
+
+<div class="container-fluid">
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show mt-3" role="alert">
+            @TempData["Error"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <div class="page-header">
+        <div>
+            <h1><span class="page-icon bg-grad-amber"><i class="fas fa-receipt"></i></span> Claims</h1>
+            <div class="page-subtitle">Process expense claims with three-way matching.</div>
+        </div>
+        <a href="/" class="btn btn-outline-secondary btn-sm"><i class="fas fa-arrow-left me-1"></i> Back to Dashboard</a>
+    </div>
+
+    <div class="kpi-grid">
+        <div class="kpi">
+            <div class="kpi-icon bg-grad-amber"><i class="fas fa-receipt"></i></div>
+            <div><div class="kpi-label">Total Claims</div><div class="kpi-value">@claims.Count</div></div>
+        </div>
+        <div class="kpi">
+            <div class="kpi-icon bg-grad-blue"><i class="fas fa-dollar-sign"></i></div>
+            <div><div class="kpi-label">Total Claimed</div><div class="kpi-value">@totalClaimed.ToString("C0")</div></div>
+        </div>
+        <div class="kpi">
+            <div class="kpi-icon bg-grad-green"><i class="fas fa-equals"></i></div>
+            <div><div class="kpi-label">Three-Way Matched</div><div class="kpi-value">@matchedCount</div></div>
+        </div>
+        <div class="kpi">
+            <div class="kpi-icon bg-grad-violet"><i class="fas fa-money-bill-wave"></i></div>
+            <div><div class="kpi-label">Paid</div><div class="kpi-value">@paidCount</div></div>
+        </div>
+    </div>
+
+    <div class="terp-card">
+        <div class="terp-card-header">
+            <h2><i class="fas fa-list me-2 text-muted"></i>All Claims</h2>
+            <span class="pill pill-gray">@claims.Count records</span>
+        </div>
+        <div class="terp-card-body">
+            @if (claims.Count == 0)
+            {
+                <div class="empty-state">
+                    <div class="empty-illu"><i class="fas fa-receipt"></i></div>
+                    <div class="empty-title">No claims yet</div>
+                    <div class="empty-sub">Submitted expense claims will land here.</div>
+                </div>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Claim #</th>
+                                <th class="text-end">Claim</th>
+                                <th class="text-end">Budget</th>
+                                <th class="text-end">Invoice</th>
+                                <th>Currency</th>
+                                <th>Match</th>
+                                <th>Status</th>
+                                <th>Created</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var c in claims)
+                            {
+                                var status = c["status"] as string ?? "";
+                                var match = c["match_status"] as string ?? "";
+                                <tr>
+                                    <td><span class="mono">@c["claim_number"]</span></td>
+                                    <td class="text-end text-money">@((c["claim_amount"] as decimal?)?.ToString("C0"))</td>
+                                    <td class="text-end text-money-muted">@((c["budget_amount"] as decimal?)?.ToString("C0"))</td>
+                                    <td class="text-end text-money-muted">@((c["invoice_amount"] as decimal?)?.ToString("C0"))</td>
+                                    <td><span class="mono">@c["currency"]</span></td>
+                                    <td><span class="@MatchClass(match)"><span class="dot"></span>@match</span></td>
+                                    <td><span class="@ClaimStatusClass(status)"><span class="dot"></span>@status.Replace("_", " ")</span></td>
+                                    <td class="text-muted">@((c["created_on"] as DateTime?)?.ToString("MMM dd, yyyy"))</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
+</div>

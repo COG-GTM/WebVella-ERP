@@ -1,0 +1,66 @@
+@page "/"
+@model WebVella.Erp.Site.TIMS.Pages.IndexModel
+@{
+    ViewData["Title"] = "TIMS Dashboard";
+}
+
+<div class="container-fluid mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">TIMS - Travel Information Management System</h3>
+                </div>
+                <div class="card-body">
+                    <div class="brand-logos-container" style="justify-content: flex-start; margin-bottom: 20px;">
+                        <img src="/_content/WebVella.Erp.Web/assets/imf-logo.svg" class="brand-logo-imf" alt="IMF" />
+                        <img src="/_content/WebVella.Erp.Web/assets/peoplesoft-logo.svg" class="brand-logo-peoplesoft" alt="PeopleSoft" />
+                    </div>
+                    <p class="card-text">
+                        Welcome to the Travel Information Management System. This system provides comprehensive 
+                        mission-based travel management with PeopleSoft Finance integration.
+                    </p>
+                    
+                    <div class="row mt-4">
+                        <div class="col-md-3">
+                            <div class="card text-center">
+                                <div class="card-body">
+                                    <i class="fas fa-globe-americas fa-3x" style="color: #003399;"></i>
+                                    <h5 class="card-title mt-3">Missions</h5>
+                                    <p class="card-text">Manage and track travel missions</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card text-center">
+                                <div class="card-body">
+                                    <i class="fas fa-file-alt fa-3x" style="color: #CC0000;"></i>
+                                    <h5 class="card-title mt-3">Travel Requests</h5>
+                                    <p class="card-text">Submit and authorize travel requests</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card text-center">
+                                <div class="card-body">
+                                    <i class="fas fa-receipt fa-3x" style="color: #FF9800;"></i>
+                                    <h5 class="card-title mt-3">Claims</h5>
+                                    <p class="card-text">Process expense claims with three-way matching</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card text-center">
+                                <div class="card-body">
+                                    <i class="fas fa-university fa-3x" style="color: #FF5722;"></i>
+                                    <h5 class="card-title mt-3">Payments</h5>
+                                    <p class="card-text">Corporate banking and payment processing</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

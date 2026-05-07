@@ -22,16 +22,18 @@
 	</div>
 	<vc:site-menu page-model="@pageModel"></vc:site-menu>
 	<div id="brand-logo" class="pl-3 pr-3">
+			<div class="brand-logos-container">
+				<img src="@ViewBag.ImfLogo" class="brand-logo-imf" alt="IMF" />
+				<img src="@ViewBag.PeoplesoftLogo" class="brand-logo-peoplesoft" alt="PeopleSoft" />
+			</div>
 			@if (currentApp == null)
 			{
 				<a href="@ViewBag.AppDefaultLink">
-					<img src="@ViewBag.BrandLogo" />
 					<span class="app-label"  style="color:@ViewData["BodyBorderColor"]">@ViewBag.DefaultAppName</span>			
 				</a>
 			}
 			else {
 				<a href="@ViewBag.AppDefaultLink">
-					<img src="@ViewBag.BrandLogo" />
 					<span class="app-label" title="@currentApp.Label"  style="color:@ViewData["BodyBorderColor"]">@currentApp.Label</span>			
 				</a>
 			}

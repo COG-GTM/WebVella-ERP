@@ -21,13 +21,19 @@ namespace WebVella.Erp.Web.Models
 		public string Description { get; set; } = "this is the default theme of the application";
 
 		[JsonProperty("brand_logo")]
-		public string BrandLogo { get; set; } = "/_content/WebVella.Erp.Web/assets/logo.png";
+		public string BrandLogo { get; set; } = "/assets/logo.png";
 
 		[JsonProperty("brand_logo_text")]
-		public string BrandLogoText { get; set; } = "/_content/WebVella.Erp.Web/assets/logo-text.png";
+		public string BrandLogoText { get; set; } = "/assets/logo-text.png";
+
+		[JsonProperty("imf_logo")]
+		public string ImfLogo { get; set; } = "/_content/WebVella.Erp.Web/assets/imf-logo.svg";
+
+		[JsonProperty("peoplesoft_logo")]
+		public string PeoplesoftLogo { get; set; } = "/_content/WebVella.Erp.Web/assets/peoplesoft-logo.svg";
 
 		[JsonProperty("brand_favicon")]
-		public string BrandFavIcon { get; set; } = "/_content/WebVella.Erp.Web/assets/favicon.png";
+		public string BrandFavIcon { get; set; } = "/assets/favicon.png";
 
 		[JsonProperty("brand_color")]
 		public string BrandColor { get; set; } = "#fff";

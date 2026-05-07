@@ -25,6 +25,8 @@ namespace WebVella.Erp.Web.Pages
 		public string Error { get; set; }
 
 		public string BrandLogo { get; set; }
+		public string ImfLogo { get; set; }
+		public string PeoplesoftLogo { get; set; }
 
 		public LoginModel([FromServices] ErpRequestContext reqCtx) { ErpRequestContext = reqCtx; }
 
@@ -51,6 +53,8 @@ namespace WebVella.Erp.Web.Pages
 			var currentApp = ErpRequestContext.App;
 			var theme = appContext.Theme;
 			BrandLogo = theme.BrandLogo;
+			ImfLogo = theme.ImfLogo;
+			PeoplesoftLogo = theme.PeoplesoftLogo;
 			if (!String.IsNullOrWhiteSpace(ErpSettings.NavLogoUrl))
 			{
 				BrandLogo = ErpSettings.NavLogoUrl;

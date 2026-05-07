@@ -29,6 +29,8 @@ namespace WebVella.Erp.Web.Components
             var theme = appContext.Theme;
             ViewBag.Theme = theme;
             ViewBag.BrandLogo = theme.BrandLogo;
+            ViewBag.ImfLogo = theme.ImfLogo;
+            ViewBag.PeoplesoftLogo = theme.PeoplesoftLogo;
             if (!String.IsNullOrWhiteSpace(ErpSettings.NavLogoUrl)) {
                 ViewBag.BrandLogo = ErpSettings.NavLogoUrl;
             }

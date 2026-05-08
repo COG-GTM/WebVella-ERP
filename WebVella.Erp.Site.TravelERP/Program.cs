@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
 
-namespace WebVella.Erp.Site.TIMS
+namespace WebVella.Erp.Site.TravelERP
 {
 	public class Program
 	{

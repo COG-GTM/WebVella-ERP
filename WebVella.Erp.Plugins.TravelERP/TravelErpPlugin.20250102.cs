@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using WebVella.Erp.Api;
 using WebVella.Erp.Api.Models;
 
-namespace WebVella.Erp.Plugins.TIMS
+namespace WebVella.Erp.Plugins.TravelERP
 {
-	public partial class TimsPlugin : ErpPlugin
+	public partial class TravelErpPlugin : ErpPlugin
 	{
 		// Adds the fields that were silently dropped during the initial 20250101
 		// migration because they were marked Required=true without a DefaultValue,

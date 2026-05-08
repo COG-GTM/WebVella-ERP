@@ -1,8 +1,8 @@
-# TIMS - Travel Information Management System
+# TravelERP - Travel Management System
 
 ## Overview
 
-TIMS is a complex, mission-based travel management system built for IMF operations. It integrates with PeopleSoft Finance and provides comprehensive travel authorization, expense claims processing, and payment management capabilities.
+TravelERP is a complex, mission-based travel management system. It integrates with PeopleSoft Finance and provides comprehensive travel authorization, expense claims processing, and payment management capabilities.
 
 ## Key Features
 
@@ -81,12 +81,12 @@ The claims processing includes automated three-way matching:
 
 ## Branding
 
-TIMS includes IMF and PeopleSoft branding throughout the application.
+TravelERP includes PeopleSoft branding throughout the application.
 
 ## Development
 
 ### Services
-- `TimsService`: Core business logic for missions, claims, and payments
+- `TravelErpService`: Core business logic for missions, claims, and payments
 
 ### Hooks
 - `ClaimHooks`: Automated three-way matching on claim submission
@@ -94,4 +94,4 @@ TIMS includes IMF and PeopleSoft branding throughout the application.
 
 ## Version History
 
-- **20250101**: Initial release with core TIMS functionality
+- **20250101**: Initial release with core TravelERP functionality

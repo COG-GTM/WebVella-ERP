@@ -1,4 +1,4 @@
-namespace WebVella.Erp.Plugins.TIMS
+namespace WebVella.Erp.Plugins.TravelERP
 {
 	public class PluginSettings
 	{

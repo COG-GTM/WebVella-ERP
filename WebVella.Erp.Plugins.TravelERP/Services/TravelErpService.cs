@@ -5,14 +5,14 @@ using WebVella.Erp.Api.Models;
 using WebVella.Erp.Eql;
 using WebVella.Erp.Database;
 
-namespace WebVella.Erp.Plugins.TIMS.Services
+namespace WebVella.Erp.Plugins.TravelERP.Services
 {
-	public class TimsService
+	public class TravelErpService
 	{
 		private readonly EntityManager _entityManager;
 		private readonly RecordManager _recordManager;
 
-		public TimsService(DbContext dbContext = null)
+		public TravelErpService(DbContext dbContext = null)
 		{
 			_entityManager = new EntityManager();
 			_recordManager = new RecordManager(dbContext, true, true);

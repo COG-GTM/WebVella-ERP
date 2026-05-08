@@ -7,22 +7,22 @@ using System.Security.Claims;
 using WebVella.Erp.Api;
 using WebVella.Erp.Api.Models;
 using WebVella.Erp.Database;
-using WebVella.Erp.Plugins.TIMS.Services;
+using WebVella.Erp.Plugins.TravelERP.Services;
 using WebVella.Erp.Web.Services;
 
-namespace WebVella.Erp.Plugins.TIMS.Controllers
+namespace WebVella.Erp.Plugins.TravelERP.Controllers
 {
-	public class TimsController : Controller
+	public class TravelErpController : Controller
 	{
-		private readonly TimsService _timsService;
+		private readonly TravelErpService _travelErpService;
 		private readonly IErpService _erpService;
 		private readonly RecordManager _recMan;
 		private readonly EntityManager _entMan;
 		private readonly SecurityManager _secMan;
 
-		public TimsController(IErpService erpService)
+		public TravelErpController(IErpService erpService)
 		{
-			_timsService = new TimsService();
+			_travelErpService = new TravelErpService();
 			_erpService = erpService;
 			_recMan = new RecordManager();
 			_entMan = new EntityManager();
@@ -51,7 +51,7 @@ namespace WebVella.Erp.Plugins.TIMS.Controllers
 		{
 			try
 			{
-				var missions = _timsService.GetMissionsByStatus("planned");
+				var missions = _travelErpService.GetMissionsByStatus("planned");
 				var model = new
 				{
 					Missions = missions,
@@ -72,7 +72,7 @@ namespace WebVella.Erp.Plugins.TIMS.Controllers
 		{
 			try
 			{
-				var travelRequests = _timsService.GetTravelRequestsByMission(Guid.Empty);
+				var travelRequests = _travelErpService.GetTravelRequestsByMission(Guid.Empty);
 				var model = new
 				{
 					TravelRequests = travelRequests,
@@ -93,7 +93,7 @@ namespace WebVella.Erp.Plugins.TIMS.Controllers
 		{
 			try
 			{
-				var claims = _timsService.GetClaimsByTravelRequest(Guid.Empty);
+				var claims = _travelErpService.GetClaimsByTravelRequest(Guid.Empty);
 				var model = new
 				{
 					Claims = claims,
@@ -114,7 +114,7 @@ namespace WebVella.Erp.Plugins.TIMS.Controllers
 		{
 			try
 			{
-				var payments = _timsService.GetPaymentsByClaim(Guid.Empty);
+				var payments = _travelErpService.GetPaymentsByClaim(Guid.Empty);
 				var model = new
 				{
 					Payments = payments,
@@ -135,7 +135,7 @@ namespace WebVella.Erp.Plugins.TIMS.Controllers
 		{
 			try
 			{
-				var budgets = _timsService.GetBudgetsByDepartment("");
+				var budgets = _travelErpService.GetBudgetsByDepartment("");
 				var model = new
 				{
 					Budgets = budgets,
@@ -156,7 +156,7 @@ namespace WebVella.Erp.Plugins.TIMS.Controllers
 		{
 			try
 			{
-				var bankAccounts = _timsService.GetActiveBankAccounts();
+				var bankAccounts = _travelErpService.GetActiveBankAccounts();
 				var model = new
 				{
 					BankAccounts = bankAccounts,
@@ -177,7 +177,7 @@ namespace WebVella.Erp.Plugins.TIMS.Controllers
 		{
 			try
 			{
-				var approvals = _timsService.GetApprovalsByEntity("", Guid.Empty);
+				var approvals = _travelErpService.GetApprovalsByEntity("", Guid.Empty);
 				var model = new
 				{
 					Approvals = approvals,

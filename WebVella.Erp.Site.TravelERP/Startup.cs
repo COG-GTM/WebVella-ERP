@@ -11,11 +11,11 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO.Compression;
 using WebVella.Erp.Plugins.SDK;
-using WebVella.Erp.Plugins.TIMS;
+using WebVella.Erp.Plugins.TravelERP;
 using WebVella.Erp.Web;
 using WebVella.Erp.Web.Middleware;
 
-namespace WebVella.Erp.Site.TIMS
+namespace WebVella.Erp.Site.TravelERP
 {
 	public class Startup
 	{
@@ -62,7 +62,7 @@ namespace WebVella.Erp.Site.TIMS
 					.AddCookie(options =>
 					{
 						options.Cookie.HttpOnly = true;
-						options.Cookie.Name = "erp_auth_tims";
+						options.Cookie.Name = "erp_auth_travelerp";
 						options.LoginPath = new PathString("/login");
 						options.LogoutPath = new PathString("/logout");
 						options.AccessDeniedPath = new PathString("/error?access_denied");
@@ -117,7 +117,7 @@ namespace WebVella.Erp.Site.TIMS
 
 			app
 			.UseErpPlugin<SdkPlugin>()
-			.UseErpPlugin<TimsPlugin>()
+			.UseErpPlugin<TravelErpPlugin>()
 			.UseErp()
 			.UseErpMiddleware();
 

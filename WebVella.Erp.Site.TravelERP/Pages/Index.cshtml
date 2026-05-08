@@ -1,16 +1,16 @@
 @page "/"
-@model WebVella.Erp.Site.TIMS.Pages.IndexModel
+@model WebVella.Erp.Site.TravelERP.Pages.IndexModel
 @{
     ViewData["Title"] = "Dashboard";
     var error = TempData["Error"] as string;
 
     var modules = new[] {
-        new { Url = "/Tims/Missions",        Icon = "fa-globe-americas", Grad = "bg-grad-blue",   Title = "Missions",         Desc = "Plan, track, and report on official travel missions." },
-        new { Url = "/Tims/TravelRequests",  Icon = "fa-paper-plane",    Grad = "bg-grad-red",    Title = "Travel Requests",  Desc = "Submit and authorize travel for upcoming missions." },
-        new { Url = "/Tims/Claims",          Icon = "fa-receipt",        Grad = "bg-grad-amber",  Title = "Claims",           Desc = "Process expense claims with three-way matching." },
-        new { Url = "/Tims/Payments",        Icon = "fa-university",     Grad = "bg-grad-teal",   Title = "Payments",         Desc = "Corporate banking and payment processing." },
-        new { Url = "/Tims/Budgets",         Icon = "fa-coins",          Grad = "bg-grad-green",  Title = "Budgets",          Desc = "Departmental allocations and consumption." },
-        new { Url = "/Tims/Approvals",       Icon = "fa-circle-check",   Grad = "bg-grad-violet", Title = "Approvals",        Desc = "Multi-level approval workflows and history." }
+        new { Url = "/TravelErp/Missions",        Icon = "fa-globe-americas", Grad = "bg-grad-blue",   Title = "Missions",         Desc = "Plan, track, and report on official travel missions." },
+        new { Url = "/TravelErp/TravelRequests",  Icon = "fa-paper-plane",    Grad = "bg-grad-red",    Title = "Travel Requests",  Desc = "Submit and authorize travel for upcoming missions." },
+        new { Url = "/TravelErp/Claims",          Icon = "fa-receipt",        Grad = "bg-grad-amber",  Title = "Claims",           Desc = "Process expense claims with three-way matching." },
+        new { Url = "/TravelErp/Payments",        Icon = "fa-university",     Grad = "bg-grad-teal",   Title = "Payments",         Desc = "Corporate banking and payment processing." },
+        new { Url = "/TravelErp/Budgets",         Icon = "fa-coins",          Grad = "bg-grad-green",  Title = "Budgets",          Desc = "Departmental allocations and consumption." },
+        new { Url = "/TravelErp/Approvals",       Icon = "fa-circle-check",   Grad = "bg-grad-violet", Title = "Approvals",        Desc = "Multi-level approval workflows and history." }
     };
 }
 

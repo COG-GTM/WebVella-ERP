@@ -6,18 +6,18 @@ using WebVella.Erp.Api;
 using WebVella.Erp.Api.Models;
 using WebVella.Erp.Api.Models.AutoMapper;
 
-namespace WebVella.Erp.Plugins.TIMS
+namespace WebVella.Erp.Plugins.TravelERP
 {
-	public partial class TimsPlugin : ErpPlugin
+	public partial class TravelErpPlugin : ErpPlugin
 	{
 		private static void Patch20250101()
 		{
-			#region << Create TIMS Application >>
+			#region << Create TravelERP Application >>
 			{
 				var id = new Guid("a1b2c3d4-e5f6-7890-abcd-ef1234567890");
-				var name = "tims";
-				var label = "TIMS";
-				var description = "Travel Information Management System - Mission-based travel with PeopleSoft integration";
+				var name = "travelerp";
+				var label = "TravelERP";
+				var description = "Travel ERP - Mission-based travel - Mission-based travel with PeopleSoft integration";
 				var iconClass = "fa fa-plane";
 				var author = "IMF";
 				var color = "#003399";
@@ -29,14 +29,14 @@ namespace WebVella.Erp.Plugins.TIMS
 			}
 			#endregion
 
-			#region << Create TIMS Entities >>
-			CreateTimsMissionEntity();
-			CreateTimsTravelRequestEntity();
-			CreateTimsClaimEntity();
-			CreateTimsBudgetEntity();
-			CreateTimsPaymentEntity();
-			CreateTimsBankAccountEntity();
-			CreateTimsApprovalEntity();
+			#region << Create TravelERP Entities >>
+			CreateTravelErpMissionEntity();
+			CreateTravelErpTravelRequestEntity();
+			CreateTravelErpClaimEntity();
+			CreateTravelErpBudgetEntity();
+			CreateTravelErpPaymentEntity();
+			CreateTravelErpBankAccountEntity();
+			CreateTravelErpApprovalEntity();
 			#endregion
 
 			#region << Create Sitemap Areas >>
@@ -46,7 +46,7 @@ namespace WebVella.Erp.Plugins.TIMS
 				var appId = new Guid("a1b2c3d4-e5f6-7890-abcd-ef1234567890");
 				var name = "dashboard";
 				var label = "Dashboard";
-				var description = "TIMS Overview";
+				var description = "TravelERP Overview";
 				var iconClass = "fas fa-tachometer-alt";
 				var color = "#003399";
 				var weight = 1;
@@ -386,7 +386,7 @@ namespace WebVella.Erp.Plugins.TIMS
 
 		#region << Entity Creation Methods >>
 
-		private static void CreateTimsMissionEntity()
+		private static void CreateTravelErpMissionEntity()
 		{
 			var entityId = new Guid("10000000-0000-0000-0000-000000000001");
 			var entityName = "tims_mission";
@@ -535,7 +535,7 @@ namespace WebVella.Erp.Plugins.TIMS
 			}
 		}
 
-		private static void CreateTimsTravelRequestEntity()
+		private static void CreateTravelErpTravelRequestEntity()
 		{
 			var entityId = new Guid("10000000-0000-0000-0000-000000000002");
 			var entityName = "tims_travel_request";
@@ -671,7 +671,7 @@ namespace WebVella.Erp.Plugins.TIMS
 			}
 		}
 
-		private static void CreateTimsClaimEntity()
+		private static void CreateTravelErpClaimEntity()
 		{
 			var entityId = new Guid("10000000-0000-0000-0000-000000000003");
 			var entityName = "tims_claim";
@@ -829,7 +829,7 @@ namespace WebVella.Erp.Plugins.TIMS
 			}
 		}
 
-		private static void CreateTimsBudgetEntity()
+		private static void CreateTravelErpBudgetEntity()
 		{
 			var entityId = new Guid("10000000-0000-0000-0000-000000000004");
 			var entityName = "tims_budget";
@@ -942,7 +942,7 @@ namespace WebVella.Erp.Plugins.TIMS
 			}
 		}
 
-		private static void CreateTimsPaymentEntity()
+		private static void CreateTravelErpPaymentEntity()
 		{
 			var entityId = new Guid("10000000-0000-0000-0000-000000000005");
 			var entityName = "tims_payment";
@@ -1061,7 +1061,7 @@ namespace WebVella.Erp.Plugins.TIMS
 			}
 		}
 
-		private static void CreateTimsBankAccountEntity()
+		private static void CreateTravelErpBankAccountEntity()
 		{
 			var entityId = new Guid("10000000-0000-0000-0000-000000000006");
 			var entityName = "tims_bank_account";
@@ -1160,7 +1160,7 @@ namespace WebVella.Erp.Plugins.TIMS
 			}
 		}
 
-		private static void CreateTimsApprovalEntity()
+		private static void CreateTravelErpApprovalEntity()
 		{
 			var entityId = new Guid("10000000-0000-0000-0000-000000000007");
 			var entityName = "tims_approval";

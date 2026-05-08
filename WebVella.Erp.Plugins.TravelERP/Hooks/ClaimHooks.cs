@@ -2,18 +2,18 @@ using System;
 using System.Collections.Generic;
 using WebVella.Erp.Api;
 using WebVella.Erp.Api.Models;
-using WebVella.Erp.Plugins.TIMS.Services;
+using WebVella.Erp.Plugins.TravelERP.Services;
 using WebVella.Erp.Eql;
 
-namespace WebVella.Erp.Plugins.TIMS.Hooks
+namespace WebVella.Erp.Plugins.TravelERP.Hooks
 {
 	public class ClaimHooks
 	{
-		private readonly TimsService _timsService;
+		private readonly TravelErpService _travelErpService;
 
 		public ClaimHooks()
 		{
-			_timsService = new TimsService();
+			_travelErpService = new TravelErpService();
 		}
 
 		/// <summary>
@@ -28,7 +28,7 @@ namespace WebVella.Erp.Plugins.TIMS.Hooks
 			{
 				// Automatically perform three-way matching when claim is created
 				var claimId = (Guid)claimRecord.Properties["id"];
-				var matchStatus = _timsService.PerformThreeWayMatch(claimId);
+				var matchStatus = _travelErpService.PerformThreeWayMatch(claimId);
 
 				// Update the claim with the match status
 				claimRecord.Properties["match_status"] = matchStatus;
@@ -56,7 +56,7 @@ namespace WebVella.Erp.Plugins.TIMS.Hooks
 			{
 				// Re-perform three-way matching when claim is updated
 				var claimId = (Guid)claimRecord.Properties["id"];
-				var matchStatus = _timsService.PerformThreeWayMatch(claimId);
+				var matchStatus = _travelErpService.PerformThreeWayMatch(claimId);
 
 				// Update the claim with the match status
 				claimRecord.Properties["match_status"] = matchStatus;
@@ -109,7 +109,7 @@ namespace WebVella.Erp.Plugins.TIMS.Hooks
 
 			// Perform three-way match validation
 			var claimId = (Guid)claimRecord.Properties["id"];
-			var matchStatus = _timsService.PerformThreeWayMatch(claimId);
+			var matchStatus = _travelErpService.PerformThreeWayMatch(claimId);
 
 			if (matchStatus == "failed")
 			{

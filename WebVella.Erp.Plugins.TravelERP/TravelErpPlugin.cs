@@ -4,12 +4,12 @@ using System.Collections.Generic;
 using WebVella.Erp.Api;
 using WebVella.Erp.Jobs;
 
-namespace WebVella.Erp.Plugins.TIMS
+namespace WebVella.Erp.Plugins.TravelERP
 {
-	public partial class TimsPlugin : ErpPlugin
+	public partial class TravelErpPlugin : ErpPlugin
 	{
 		[JsonProperty(PropertyName = "name")]
-		public override string Name { get; protected set; } = "tims";
+		public override string Name { get; protected set; } = "travelerp";
 
 		public override void Initialize(IServiceProvider serviceProvider)
 		{

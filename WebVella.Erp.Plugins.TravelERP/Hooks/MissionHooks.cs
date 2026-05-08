@@ -4,7 +4,7 @@ using WebVella.Erp.Api;
 using WebVella.Erp.Api.Models;
 using WebVella.Erp.Eql;
 
-namespace WebVella.Erp.Plugins.TIMS.Hooks
+namespace WebVella.Erp.Plugins.TravelERP.Hooks
 {
 	public class MissionHooks
 	{

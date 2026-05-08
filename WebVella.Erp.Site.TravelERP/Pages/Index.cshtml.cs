@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
-namespace WebVella.Erp.Site.TIMS.Pages
+namespace WebVella.Erp.Site.TravelERP.Pages
 {
     public class IndexModel : PageModel
     {

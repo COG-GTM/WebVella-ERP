@@ -5,24 +5,24 @@ using System.Linq;
 using System.Security.Claims;
 using WebVella.Erp.Api;
 using WebVella.Erp.Api.Models;
-using WebVella.Erp.Plugins.TIMS.Services;
+using WebVella.Erp.Plugins.TravelERP.Services;
 
-namespace WebVella.Erp.Site.TIMS.Controllers
+namespace WebVella.Erp.Site.TravelERP.Controllers
 {
-	public class TimsController : Controller
+	public class TravelErpController : Controller
 	{
-		private readonly TimsService _timsService;
+		private readonly TravelErpService _travelErpService;
 
-		public TimsController()
+		public TravelErpController()
 		{
-			_timsService = new TimsService();
+			_travelErpService = new TravelErpService();
 		}
 
 		public IActionResult Missions()
 		{
 			try
 			{
-				var missions = _timsService.GetAllMissions();
+				var missions = _travelErpService.GetAllMissions();
 				ViewData["Title"] = "Missions";
 				ViewData["Missions"] = missions;
 				return View();
@@ -38,7 +38,7 @@ namespace WebVella.Erp.Site.TIMS.Controllers
 		{
 			try
 			{
-				var travelRequests = _timsService.GetAllTravelRequests();
+				var travelRequests = _travelErpService.GetAllTravelRequests();
 				ViewData["Title"] = "Travel Requests";
 				ViewData["TravelRequests"] = travelRequests;
 				return View();
@@ -54,7 +54,7 @@ namespace WebVella.Erp.Site.TIMS.Controllers
 		{
 			try
 			{
-				var claims = _timsService.GetAllClaims();
+				var claims = _travelErpService.GetAllClaims();
 				ViewData["Title"] = "Claims";
 				ViewData["Claims"] = claims;
 				return View();
@@ -70,7 +70,7 @@ namespace WebVella.Erp.Site.TIMS.Controllers
 		{
 			try
 			{
-				var payments = _timsService.GetAllPayments();
+				var payments = _travelErpService.GetAllPayments();
 				ViewData["Title"] = "Payments";
 				ViewData["Payments"] = payments;
 				return View();
@@ -86,7 +86,7 @@ namespace WebVella.Erp.Site.TIMS.Controllers
 		{
 			try
 			{
-				var budgets = _timsService.GetBudgetsByDepartment("");
+				var budgets = _travelErpService.GetBudgetsByDepartment("");
 				ViewData["Title"] = "Budgets";
 				ViewData["Budgets"] = budgets;
 				return View();
@@ -102,7 +102,7 @@ namespace WebVella.Erp.Site.TIMS.Controllers
 		{
 			try
 			{
-				var bankAccounts = _timsService.GetActiveBankAccounts();
+				var bankAccounts = _travelErpService.GetActiveBankAccounts();
 				ViewData["Title"] = "Bank Accounts";
 				ViewData["BankAccounts"] = bankAccounts;
 				return View();
@@ -118,7 +118,7 @@ namespace WebVella.Erp.Site.TIMS.Controllers
 		{
 			try
 			{
-				var approvals = _timsService.GetApprovalsByEntity("", Guid.Empty);
+				var approvals = _travelErpService.GetApprovalsByEntity("", Guid.Empty);
 				ViewData["Title"] = "Approvals";
 				ViewData["Approvals"] = approvals;
 				return View();
@@ -137,7 +137,7 @@ namespace WebVella.Erp.Site.TIMS.Controllers
 			try
 			{
 				// Skip if data already exists
-				if (_timsService.GetAllMissions().Count > 0)
+				if (_travelErpService.GetAllMissions().Count > 0)
 				{
 					summary.Add("Skipped: missions already exist. Delete records first to reseed.");
 					return Content(string.Join("\n", summary), "text/plain");
@@ -169,7 +169,7 @@ namespace WebVella.Erp.Site.TIMS.Controllers
 					rec["budget_amount"] = m.budget;
 					rec["status"] = m.status;
 					rec["peoplesoft_project_id"] = m.psId;
-					var resp = _timsService.CreateMission(rec);
+					var resp = _travelErpService.CreateMission(rec);
 					if (!resp.Success) { summary.Add($"Mission {m.code} FAILED: {resp.Message}"); continue; }
 					missionIds[m.code] = id;
 					summary.Add($"Created mission {m.code}");
@@ -200,7 +200,7 @@ namespace WebVella.Erp.Site.TIMS.Controllers
 					rec["estimated_cost"] = t.cost;
 					rec["status"] = t.status;
 					rec["peoplesoft_request_id"] = $"PS-REQ-{t.num.Replace("TR-", "")}";
-					var resp = _timsService.CreateTravelRequest(rec);
+					var resp = _travelErpService.CreateTravelRequest(rec);
 					if (!resp.Success) { summary.Add($"TravelRequest {t.num} FAILED: {resp.Message}"); continue; }
 					trIds[t.num] = id;
 					summary.Add($"Created travel request {t.num}");
@@ -231,7 +231,7 @@ namespace WebVella.Erp.Site.TIMS.Controllers
 					rec["status"] = c.status;
 					rec["match_status"] = c.match;
 					rec["peoplesoft_voucher_id"] = $"PS-VCH-{c.num.Replace("CL-", "")}";
-					var resp = _timsService.CreateClaim(rec);
+					var resp = _travelErpService.CreateClaim(rec);
 					if (!resp.Success) { summary.Add($"Claim {c.num} FAILED: {resp.Message}"); continue; }
 					claimIds[c.num] = id;
 					summary.Add($"Created claim {c.num}");
@@ -257,12 +257,12 @@ namespace WebVella.Erp.Site.TIMS.Controllers
 					rec["payment_date"] = p.date;
 					rec["status"] = p.status;
 					rec["peoplesoft_payment_id"] = $"PS-PAY-{p.num.Replace("PAY-", "")}";
-					var resp = _timsService.CreatePayment(rec);
+					var resp = _travelErpService.CreatePayment(rec);
 					if (!resp.Success) { summary.Add($"Payment {p.num} FAILED: {resp.Message}"); continue; }
 					summary.Add($"Created payment {p.num}");
 				}
 
-				summary.Insert(0, "TIMS seed complete.");
+				summary.Insert(0, "TravelERP seed complete.");
 				return Content(string.Join("\n", summary), "text/plain");
 			}
 			catch (Exception ex)

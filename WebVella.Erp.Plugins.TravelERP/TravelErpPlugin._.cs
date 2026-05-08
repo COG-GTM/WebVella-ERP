@@ -1,20 +1,20 @@
 using Newtonsoft.Json;
 using System;
 
-namespace WebVella.Erp.Plugins.TIMS
+namespace WebVella.Erp.Plugins.TravelERP
 {
-	public partial class TimsPlugin : ErpPlugin
+	public partial class TravelErpPlugin : ErpPlugin
 	{
-		private const int TIMS_INIT_VERSION = 20250101;
+		private const int TRAVELERP_INIT_VERSION = 20250101;
 
 		public void ProcessPatches()
 		{
-			var currentPluginSettings = new PluginSettings() { Version = TIMS_INIT_VERSION };
+			var currentPluginSettings = new PluginSettings() { Version = TRAVELERP_INIT_VERSION };
 			string jsonData = GetPluginData();
 			if (!string.IsNullOrWhiteSpace(jsonData))
 				currentPluginSettings = JsonConvert.DeserializeObject<PluginSettings>(jsonData);
 
-			//Patch 20250101 - Initial TIMS Setup
+			//Patch 20250101 - Initial TravelERP Setup
 			{
 				var patchVersion = 20250101;
 				if (currentPluginSettings.Version < patchVersion)

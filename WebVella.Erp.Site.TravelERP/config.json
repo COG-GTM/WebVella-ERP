@@ -4,7 +4,7 @@
 		"EncryptionKey": "BC93B776A42877CFEE808823BA8B37C83B6B0AD23198AC3AF2B5A54DCB647658",
 		"Lang": "en",
 		"Locale": "en-US",
-		"TimeZoneName": "FLE Standard Time",
+		"TimeZoneName": "Europe/Helsinki",
 		"DevelopmentMode": "true",
 		"EnableBackgroungJobs": "true",
 		"EnableFileSystemStorage": "false",

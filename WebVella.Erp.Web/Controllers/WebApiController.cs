@@ -491,6 +491,7 @@ namespace WebVella.Erp.Web.Controllers
 			}
 		}
 
+		[Authorize(Roles = "administrator")]
 		[Route("api/v3.0/datasource/code-compile")]
 		[HttpPost]
 		public ActionResult DataSourceAction([FromBody] DataSourceCodeTestModel model)
@@ -508,6 +509,7 @@ namespace WebVella.Erp.Web.Controllers
 			return Json(new { success = true, message = "" });
 		}
 
+		[Authorize(Roles = "administrator")]
 		[Route("api/v3.0/datasource/test")]
 		[HttpPost]
 		public ActionResult DataSourceAction([FromBody] DataSourceTestModel model)
@@ -539,6 +541,7 @@ namespace WebVella.Erp.Web.Controllers
 			return Json(new { sql, data, errors });
 		}
 
+		[Authorize(Roles = "administrator")]
 		[Route("api/v3.0/datasource/{dataSourceId}/test")]
 		[HttpPost]
 		public ActionResult DataSourceAction(Guid dataSourceId, [FromBody] DataSourceTestModel model)
@@ -3271,6 +3274,9 @@ namespace WebVella.Erp.Web.Controllers
 
 			var filePath = "/" + String.Join("/", filePathArray) + "/" + fileName;
 
+			if (!IsSafeFsPath(filePath))
+				return DoPageNotFoundResponse();
+
 			filePath = filePath.ToLowerInvariant();
 
 			DbFileRepository fsRepository = new DbFileRepository();
@@ -3344,6 +3350,7 @@ namespace WebVella.Erp.Web.Controllers
 
 		}
 
+		[Authorize(Roles = "administrator")]
 		[AcceptVerbs(new[] { "POST" }, Route = "/fs/move/")]
 		[ResponseCache(NoStore = true, Duration = 0)]
 		public IActionResult MoveFile([FromBody] JObject submitObj)
@@ -3353,6 +3360,9 @@ namespace WebVella.Erp.Web.Controllers
 			bool overwrite = false;
 			if (submitObj["overwrite"] != null)
 				overwrite = submitObj["overwrite"].Value<bool>();
+
+			if (!IsSafeFsPath(source) || !IsSafeFsPath(target))
+				return BadRequest("Invalid file path");
 
 			source = source.ToLowerInvariant();
 			target = target.ToLowerInvariant();
@@ -3367,10 +3377,14 @@ namespace WebVella.Erp.Web.Controllers
 
 		}
 
+		[Authorize(Roles = "administrator")]
 		[AcceptVerbs(new[] { "DELETE" }, Route = "{*filepath}")]
 		[ResponseCache(NoStore = true, Duration = 0)]
 		public IActionResult DeleteFile([FromRoute] string filepath)
 		{
+			if (!IsSafeFsPath(filepath))
+				return BadRequest("Invalid file path");
+
 			filepath = filepath.ToLowerInvariant();
 
 			var fileName = filepath.Split(new char[] { '/' }).LastOrDefault();
@@ -3380,6 +3394,21 @@ namespace WebVella.Erp.Web.Controllers
 
 			fsRepository.Delete(filepath);
 			return DoResponse(new FSResponse(new FSResult { Url = filepath, Filename = fileName }));
+		}
+
+		private static bool IsSafeFsPath(string path)
+		{
+			if (string.IsNullOrWhiteSpace(path))
+				return false;
+			if (path.IndexOf('\0') >= 0)
+				return false;
+			var normalized = path.Replace('\\', '/');
+			foreach (var segment in normalized.Split('/'))
+			{
+				if (segment == "..")
+					return false;
+			}
+			return true;
 		}
 
 		private static byte[] ReadFully(Stream input)
@@ -4026,14 +4055,18 @@ namespace WebVella.Erp.Web.Controllers
 
 				string url = "/fs" + newFile.Path;
 				string vMessage = "";
-				var vOutput = @"<html><body><script>window.parent.CKEDITOR.tools.callFunction(" + CKEditorFuncNum + ", \"" + url + "\", \"" + vMessage + "\");</script></body></html>";
+				var jsEncoder = System.Text.Encodings.Web.JavaScriptEncoder.Default;
+				string safeFuncNum = new string(CKEditorFuncNum.Where(char.IsDigit).ToArray());
+				var vOutput = @"<html><body><script>window.parent.CKEDITOR.tools.callFunction(" + safeFuncNum + ", \"" + jsEncoder.Encode(url) + "\", \"" + jsEncoder.Encode(vMessage) + "\");</script></body></html>";
 
 				return Content(vOutput, "text/html");
 			}
 			catch (Exception ex)
 			{
 				new LogService().Create(Diagnostics.LogType.Error, "TErpApi:UploadFileManagerCKEditor", ex);
-				var vOutput = @"<html><body><script>window.parent.CKEDITOR.tools.callFunction(" + CKEditorFuncNum + ", \"\", \"" + ex.Message + "\");</script></body></html>";
+				var jsEncoder = System.Text.Encodings.Web.JavaScriptEncoder.Default;
+				string safeFuncNum = new string(CKEditorFuncNum.Where(char.IsDigit).ToArray());
+				var vOutput = @"<html><body><script>window.parent.CKEDITOR.tools.callFunction(" + safeFuncNum + ", \"\", \"" + jsEncoder.Encode(ex.Message) + "\");</script></body></html>";
 				return Content(vOutput, "text/html");
 			}
 		}

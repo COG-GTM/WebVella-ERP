@@ -578,7 +578,7 @@ LEFT OUTER JOIN  {0} {1} ON {2}.{3} = {4}.{5}";
 					operandString = $"'{((EqlNumberValueNode)operandNode).Number.ToString()}'";
 					break;
 				case EqlNodeType.TextValue:
-					operandString = $"'{((EqlTextValueNode)operandNode).Text}'";
+					operandString = $"'{((EqlTextValueNode)operandNode).Text.Replace("'", "''")}'";
 					break;
 				case EqlNodeType.Keyword:
 					if (((EqlKeywordNode)operandNode).Keyword == "null")

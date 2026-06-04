@@ -1,7 +1,9 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using HtmlAgilityPack;
+using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using WebVella.Erp.Exceptions;
 using WebVella.Erp.Web.Models;
@@ -26,6 +28,48 @@ namespace WebVella.Erp.Web.Components
 
 			[JsonProperty(PropertyName = "html")]
 			public string Html { get; set; } = "html";
+		}
+
+		//Sanitizes HTML before it is rendered with Html.Raw to prevent stored XSS
+		//from data-source values interpolated into the HTML block template.
+		private static string SanitizeHtml(string html)
+		{
+			if (string.IsNullOrEmpty(html))
+				return html;
+
+			var doc = new HtmlAgilityPack.HtmlDocument();
+			doc.LoadHtml(html);
+
+			var dangerousNodes = doc.DocumentNode.SelectNodes("//script|//iframe|//object|//embed|//base");
+			if (dangerousNodes != null)
+			{
+				foreach (var node in dangerousNodes.ToList())
+					node.Remove();
+			}
+
+			var nodesWithAttributes = doc.DocumentNode.SelectNodes("//*[@*]");
+			if (nodesWithAttributes != null)
+			{
+				foreach (var node in nodesWithAttributes)
+				{
+					foreach (var attr in node.Attributes.ToList())
+					{
+						var name = (attr.Name ?? string.Empty).ToLowerInvariant();
+						var value = (attr.Value ?? string.Empty).Trim().ToLowerInvariant();
+						if (name.StartsWith("on"))
+							attr.Remove();
+						else if ((name == "href" || name == "xlink:href" || name == "action" || name == "formaction")
+							&& (value.StartsWith("javascript:") || value.StartsWith("vbscript:") || value.StartsWith("data:")))
+							attr.Remove();
+						else if (name == "src" && (value.StartsWith("javascript:") || value.StartsWith("vbscript:")))
+							attr.Remove();
+						else if (name == "style" && (value.Contains("expression(") || value.Contains("javascript:")))
+							attr.Remove();
+					}
+				}
+			}
+
+			return doc.DocumentNode.OuterHtml;
 		}
 
 		public async Task<IViewComponentResult> InvokeAsync(PageComponentContext context)
@@ -87,7 +131,7 @@ namespace WebVella.Erp.Web.Components
                     if (!isVisible && context.Mode == ComponentMode.Display)
                         return await Task.FromResult<IViewComponentResult>(Content(""));
 
-                    ViewBag.ProccessedHtml = context.DataModel.GetPropertyValueByDataSource(instanceOptions.Html);
+                    ViewBag.ProccessedHtml = SanitizeHtml(context.DataModel.GetPropertyValueByDataSource(instanceOptions.Html)?.ToString());
                 }
 
 

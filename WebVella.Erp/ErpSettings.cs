@@ -116,6 +116,10 @@ namespace WebVella.Erp
 			ApiUrlTemplateFieldInlineEdit = string.IsNullOrWhiteSpace(configuration[$"ApiUrlTemplates:FieldInlineEdit"]) ? "/api/v3/en_US/record/{entityName}/{recordId}" : configuration[$"ApiUrlTemplates:FieldInlineEdit"];
 
 			JwtKey = string.IsNullOrWhiteSpace(configuration["Settings:Jwt:Key"]) ? "ThisIsMySecretKey" : configuration["Settings:Jwt:Key"];
+			if (System.Text.Encoding.UTF8.GetByteCount(JwtKey) < 32)
+			{
+				Console.Error.WriteLine("[WebVella.Erp][SECURITY WARNING] Settings:Jwt:Key is shorter than the recommended 32 bytes (256 bits) for HMAC-SHA256. Configure a stronger JWT signing key in Config.json.");
+			}
 			JwtIssuer = string.IsNullOrWhiteSpace(configuration["Settings:Jwt:Issuer"]) ? "webvella-erp" : configuration["Settings:Jwt:Issuer"];
 			JwtAudience = string.IsNullOrWhiteSpace(configuration["Settings:Jwt:Audience"]) ? "webvella-erp" : configuration["Settings:Jwt:Audience"];
 

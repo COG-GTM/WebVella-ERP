@@ -12,6 +12,7 @@ using WebVella.Erp.Web.Services;
 
 namespace WebVella.Erp.Plugins.TravelERP.Controllers
 {
+	[Authorize]
 	public class TravelErpController : Controller
 	{
 		private readonly TravelErpService _travelErpService;

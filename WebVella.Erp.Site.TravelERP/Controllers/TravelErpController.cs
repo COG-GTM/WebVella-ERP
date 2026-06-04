@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
@@ -9,6 +10,7 @@ using WebVella.Erp.Plugins.TravelERP.Services;
 
 namespace WebVella.Erp.Site.TravelERP.Controllers
 {
+	[Authorize]
 	public class TravelErpController : Controller
 	{
 		private readonly TravelErpService _travelErpService;
@@ -130,7 +132,7 @@ namespace WebVella.Erp.Site.TravelERP.Controllers
 			}
 		}
 
-		[Microsoft.AspNetCore.Authorization.AllowAnonymous]
+		[Authorize(Roles = "administrator")]
 		public IActionResult Seed()
 		{
 			var summary = new List<string>();

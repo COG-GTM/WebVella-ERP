@@ -719,6 +719,10 @@ namespace WebVella.Erp.Database
                         }
                         else
                         {
+                            //field not found - skip (prevents ORDER BY identifier injection)
+                            if (!entity.Fields.Any(x => x.Name == s.FieldName))
+                                continue;
+
                             sortSql = sortSql + " " + tableName + ".\"" + s.FieldName + "\"";
                             if (s.SortType == QuerySortType.Ascending)
                                 sortSql = sortSql + " ASC,";
@@ -1102,7 +1106,11 @@ namespace WebVella.Erp.Database
                         }
                         else
                         {
-                            sortSql = sortSql + " " + GetTableNameForEntity(entity) + "." + s.FieldName;
+                            //field not found - skip (prevents ORDER BY identifier injection)
+                            if (!entity.Fields.Any(x => x.Name == s.FieldName))
+                                continue;
+
+                            sortSql = sortSql + " " + GetTableNameForEntity(entity) + ".\"" + s.FieldName + "\"";
                             if (s.SortType == QuerySortType.Ascending)
                                 sortSql = sortSql + " ASC,";
                             else

@@ -129,6 +129,7 @@ namespace WebVella.Erp.Tests
 					service.Plugins.Add(new WebVella.Erp.Plugins.TravelERP.TravelErpPlugin());
 					service.Plugins.Add(new WebVella.Erp.Plugins.Finance.FinancePlugin());
 					service.Plugins.Add(new WebVella.Erp.Plugins.Workflow.WorkflowPlugin());
+					service.Plugins.Add(new WebVella.Erp.Plugins.Procurement.ProcurementPlugin());
 
 					var cfg = ErpAutoMapperConfiguration.MappingExpressions;
 					ErpAutoMapperConfiguration.Configure(cfg);

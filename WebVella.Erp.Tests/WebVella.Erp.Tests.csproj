@@ -1,0 +1,38 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>net10.0</TargetFramework>
+		<Nullable>disable</Nullable>
+		<IsPackable>false</IsPackable>
+		<IsTestProject>true</IsTestProject>
+		<SatelliteResourceLanguages>en</SatelliteResourceLanguages>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />
+		<PackageReference Include="xunit" Version="2.9.2" />
+		<PackageReference Include="xunit.runner.visualstudio" Version="2.8.2" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<!-- Core + Web -->
+		<ProjectReference Include="..\WebVella.ERP\WebVella.Erp.csproj" />
+		<ProjectReference Include="..\WebVella.Erp.Web\WebVella.Erp.Web.csproj" />
+		<!-- Base plugins every host registers first -->
+		<ProjectReference Include="..\WebVella.Erp.Plugins.Next\WebVella.Erp.Plugins.Next.csproj" />
+		<ProjectReference Include="..\WebVella.Erp.Plugins.SDK\WebVella.Erp.Plugins.SDK.csproj" />
+		<!-- New Wave 1 modules under test -->
+		<ProjectReference Include="..\WebVella.Erp.Plugins.Finance\WebVella.Erp.Plugins.Finance.csproj" />
+		<ProjectReference Include="..\WebVella.Erp.Plugins.Workflow\WebVella.Erp.Plugins.Workflow.csproj" />
+		<ProjectReference Include="..\WebVella.Erp.Plugins.Inventory\WebVella.Erp.Plugins.Inventory.csproj" />
+		<ProjectReference Include="..\WebVella.Erp.Plugins.Procurement\WebVella.Erp.Plugins.Procurement.csproj" />
+		<ProjectReference Include="..\WebVella.Erp.Plugins.Sales\WebVella.Erp.Plugins.Sales.csproj" />
+		<ProjectReference Include="..\WebVella.Erp.Plugins.HR\WebVella.Erp.Plugins.HR.csproj" />
+		<!-- Existing plugins for regression / collision testing -->
+		<ProjectReference Include="..\WebVella.Erp.Plugins.Project\WebVella.Erp.Plugins.Project.csproj" />
+		<ProjectReference Include="..\WebVella.Erp.Plugins.Crm\WebVella.Erp.Plugins.Crm.csproj" />
+		<ProjectReference Include="..\WebVella.Erp.Plugins.Mail\WebVella.Erp.Plugins.Mail.csproj" />
+		<ProjectReference Include="..\WebVella.Erp.Plugins.TravelERP\WebVella.Erp.Plugins.TravelERP.csproj" />
+	</ItemGroup>
+
+</Project>

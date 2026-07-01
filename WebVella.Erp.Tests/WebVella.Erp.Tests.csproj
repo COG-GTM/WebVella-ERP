@@ -24,6 +24,7 @@
 		<!-- New Wave 1 modules under test -->
 		<ProjectReference Include="..\WebVella.Erp.Plugins.Finance\WebVella.Erp.Plugins.Finance.csproj" />
 		<ProjectReference Include="..\WebVella.Erp.Plugins.Workflow\WebVella.Erp.Plugins.Workflow.csproj" />
+		<ProjectReference Include="..\WebVella.Erp.Plugins.HR\WebVella.Erp.Plugins.HR.csproj" />
 		<!-- Existing plugins for regression / collision testing -->
 		<ProjectReference Include="..\WebVella.Erp.Plugins.Project\WebVella.Erp.Plugins.Project.csproj" />
 		<ProjectReference Include="..\WebVella.Erp.Plugins.Crm\WebVella.Erp.Plugins.Crm.csproj" />

@@ -68,6 +68,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebVella.Erp.Site.Workflow"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebVella.Erp.Tests", "WebVella.Erp.Tests\WebVella.Erp.Tests.csproj", "{5FE2BC1E-4350-46D4-A7E6-44029801BFA9}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebVella.Erp.Plugins.Sales", "WebVella.Erp.Plugins.Sales\WebVella.Erp.Plugins.Sales.csproj", "{D3AA8796-62DA-4022-82AF-FB2D3E4DD103}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebVella.Erp.Site.Sales", "WebVella.Erp.Site.Sales\WebVella.Erp.Site.Sales.csproj", "{9B2A248C-DCE2-44E7-B936-96661354476D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -366,6 +370,30 @@ Global
 		{5FE2BC1E-4350-46D4-A7E6-44029801BFA9}.Release|x64.Build.0 = Release|Any CPU
 		{5FE2BC1E-4350-46D4-A7E6-44029801BFA9}.Release|x86.ActiveCfg = Release|Any CPU
 		{5FE2BC1E-4350-46D4-A7E6-44029801BFA9}.Release|x86.Build.0 = Release|Any CPU
+		{D3AA8796-62DA-4022-82AF-FB2D3E4DD103}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D3AA8796-62DA-4022-82AF-FB2D3E4DD103}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D3AA8796-62DA-4022-82AF-FB2D3E4DD103}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{D3AA8796-62DA-4022-82AF-FB2D3E4DD103}.Debug|x64.Build.0 = Debug|Any CPU
+		{D3AA8796-62DA-4022-82AF-FB2D3E4DD103}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{D3AA8796-62DA-4022-82AF-FB2D3E4DD103}.Debug|x86.Build.0 = Debug|Any CPU
+		{D3AA8796-62DA-4022-82AF-FB2D3E4DD103}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D3AA8796-62DA-4022-82AF-FB2D3E4DD103}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D3AA8796-62DA-4022-82AF-FB2D3E4DD103}.Release|x64.ActiveCfg = Release|Any CPU
+		{D3AA8796-62DA-4022-82AF-FB2D3E4DD103}.Release|x64.Build.0 = Release|Any CPU
+		{D3AA8796-62DA-4022-82AF-FB2D3E4DD103}.Release|x86.ActiveCfg = Release|Any CPU
+		{D3AA8796-62DA-4022-82AF-FB2D3E4DD103}.Release|x86.Build.0 = Release|Any CPU
+		{9B2A248C-DCE2-44E7-B936-96661354476D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9B2A248C-DCE2-44E7-B936-96661354476D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9B2A248C-DCE2-44E7-B936-96661354476D}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{9B2A248C-DCE2-44E7-B936-96661354476D}.Debug|x64.Build.0 = Debug|Any CPU
+		{9B2A248C-DCE2-44E7-B936-96661354476D}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{9B2A248C-DCE2-44E7-B936-96661354476D}.Debug|x86.Build.0 = Debug|Any CPU
+		{9B2A248C-DCE2-44E7-B936-96661354476D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9B2A248C-DCE2-44E7-B936-96661354476D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9B2A248C-DCE2-44E7-B936-96661354476D}.Release|x64.ActiveCfg = Release|Any CPU
+		{9B2A248C-DCE2-44E7-B936-96661354476D}.Release|x64.Build.0 = Release|Any CPU
+		{9B2A248C-DCE2-44E7-B936-96661354476D}.Release|x86.ActiveCfg = Release|Any CPU
+		{9B2A248C-DCE2-44E7-B936-96661354476D}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+	<PropertyGroup>
+		<TargetFramework>net10.0</TargetFramework>
+		<AddRazorSupportForMvc>true</AddRazorSupportForMvc>
+		<SatelliteResourceLanguages>en</SatelliteResourceLanguages>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<FrameworkReference Include="Microsoft.AspNetCore.App" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="10.0.6" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\WebVella.Erp.Web\WebVella.Erp.Web.csproj" />
+		<ProjectReference Include="..\WebVella.ERP\WebVella.Erp.csproj" />
+		<ProjectReference Include="..\WebVella.Erp.Plugins.Finance\WebVella.Erp.Plugins.Finance.csproj" />
+		<ProjectReference Include="..\WebVella.Erp.Plugins.Workflow\WebVella.Erp.Plugins.Workflow.csproj" />
+	</ItemGroup>
+
+</Project>

@@ -58,6 +58,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebVella.Erp.Plugins.Travel
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebVella.Erp.Site.TravelERP", "WebVella.Erp.Site.TravelERP\WebVella.Erp.Site.TravelERP.csproj", "{C2D3E4F5-A6B7-8901-CDEF-123456789012}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebVella.Erp.Plugins.Project.Domain", "WebVella.Erp.Plugins.Project.Domain\WebVella.Erp.Plugins.Project.Domain.csproj", "{C20400DD-7B4C-40B3-9DFE-D0933E205EA8}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebVella.Erp.Plugins.Project.Domain.Tests", "WebVella.Erp.Plugins.Project.Domain.Tests\WebVella.Erp.Plugins.Project.Domain.Tests.csproj", "{D651942B-1335-42E7-A388-41A63B1DA27C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -140,6 +144,14 @@ Global
 		{C2D3E4F5-A6B7-8901-CDEF-123456789012}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C2D3E4F5-A6B7-8901-CDEF-123456789012}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C2D3E4F5-A6B7-8901-CDEF-123456789012}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C20400DD-7B4C-40B3-9DFE-D0933E205EA8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C20400DD-7B4C-40B3-9DFE-D0933E205EA8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C20400DD-7B4C-40B3-9DFE-D0933E205EA8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C20400DD-7B4C-40B3-9DFE-D0933E205EA8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D651942B-1335-42E7-A388-41A63B1DA27C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D651942B-1335-42E7-A388-41A63B1DA27C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D651942B-1335-42E7-A388-41A63B1DA27C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D651942B-1335-42E7-A388-41A63B1DA27C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -6,6 +6,7 @@ using WebVella.Erp.Api;
 using WebVella.Erp.Api.Models;
 using WebVella.Erp.Eql;
 using WebVella.Erp.Exceptions;
+using WebVella.Erp.Plugins.Project.Domain.Comments;
 
 
 //TODO develop service
@@ -57,26 +58,22 @@ namespace WebVella.Erp.Plugins.Project.Services
 				var eqlCommand = "SELECT id,created_by FROM comment WHERE id = @commentId";
 				var eqlParams = new List<EqlParameter>() { new EqlParameter("commentId", recordId) };
 				var eqlResult = new EqlCommand(eqlCommand, eqlParams).Execute();
-				if (!eqlResult.Any())
-					throw new Exception("RecordId not found");
-				if ((Guid)eqlResult[0]["created_by"] != SecurityContext.CurrentUser.Id)
-					throw new Exception("Only the author can delete its comment");
+				var authorization = CommentDeletionRules.AuthorizeDelete(eqlResult.Any(),
+					() => (Guid)eqlResult[0]["created_by"], () => SecurityContext.CurrentUser.Id);
+				if (authorization == CommentDeleteAuthorization.RecordNotFound)
+					throw new Exception(CommentDeletionRules.RecordNotFoundMessage);
+				if (authorization == CommentDeleteAuthorization.NotAuthor)
+					throw new Exception(CommentDeletionRules.NotAuthorMessage);
 			}
 
-			var commentIdListForDeletion = new List<Guid>();
-			//Add requested
-			commentIdListForDeletion.Add(recordId);
-
+			List<Guid> commentIdListForDeletion;
 			//Find and add all the child comments
 			//TODO currently only on level if comment nesting is implemented. If it is increased this method should be changed
 			{
 				var eqlCommand = "SELECT id FROM comment WHERE parent_id = @commentId";
 				var eqlParams = new List<EqlParameter>() { new EqlParameter("commentId", recordId) };
 				var eqlResult = new EqlCommand(eqlCommand, eqlParams).Execute();
-				foreach (var childComment in eqlResult)
-				{
-					commentIdListForDeletion.Add((Guid)childComment["id"]);
-				}
+				commentIdListForDeletion = CommentDeletionRules.BuildDeletionList(recordId, eqlResult.Select(x => (Guid)x["id"]).ToList());
 			}
 
 			//Create transaction 
@@ -105,7 +102,7 @@ namespace WebVella.Erp.Plugins.Project.Services
 			var isProjectComment = false;
 			var relatedTaskRecords = new EntityRecordList();
 			//Get timelog
-			if (record.Properties.ContainsKey("l_scope") && record["l_scope"] != null && ((string)record["l_scope"]).Contains("projects"))
+			if (record.Properties.ContainsKey("l_scope") && record["l_scope"] != null && CommentScopeRules.IsProjectScope((string)record["l_scope"]))
 			{
 				isProjectComment = true;
 			}
@@ -113,23 +110,15 @@ namespace WebVella.Erp.Plugins.Project.Services
 			if (isProjectComment)
 			{
 				//Get related tasks from related records field
-				if (record.Properties.ContainsKey("l_related_records") && record["l_related_records"] != null && (string)record["l_related_records"] != "")
+				if (record.Properties.ContainsKey("l_related_records") && record["l_related_records"] != null && CommentScopeRules.HasRelatedRecords((string)record["l_related_records"]))
 				{
 					try
 					{
 						var relatedRecordGuid = JsonConvert.DeserializeObject<List<Guid>>((string)record["l_related_records"]);
 						var taskEqlCommand = "SELECT *,$project_nn_task.id, $user_nn_task_watchers.id FROM task WHERE ";
-						var filterStringList = new List<string>();
-						var taskEqlParams = new List<EqlParameter>();
-						var index = 1;
-						foreach (var taskGuid in relatedRecordGuid)
-						{
-							var paramName = "taskId" + index;
-							filterStringList.Add($" id = @{paramName} ");
-							taskEqlParams.Add(new EqlParameter(paramName, taskGuid));
-							index++;
-						}
-						taskEqlCommand += String.Join(" OR ", filterStringList);
+						var taskFilter = RelatedTaskFilter.Build(relatedRecordGuid);
+						var taskEqlParams = taskFilter.Parameters.Select(x => new EqlParameter(x.Key, x.Value)).ToList();
+						taskEqlCommand += taskFilter.WhereClause;
 						relatedTaskRecords = new EqlCommand(taskEqlCommand, taskEqlParams).Execute();
 					}
 					catch (Exception)
@@ -137,8 +126,8 @@ namespace WebVella.Erp.Plugins.Project.Services
 						throw;
 					}
 				}
-				if (!relatedTaskRecords.Any())
-					throw new Exception("Hook exception: This comment is a project comment but does not have an existing taskId related");
+				if (!ProjectCommentRules.HasExistingRelatedTask(relatedTaskRecords.Count))
+					throw new Exception(ProjectCommentRules.MissingRelatedTaskMessage);
 
 				var taskRecord = relatedTaskRecords[0]; //Currently should be related only to 1 task in projects
 
@@ -160,60 +149,44 @@ namespace WebVella.Erp.Plugins.Project.Services
 				}
 
 				//Add activity log
-				var subject = $"commented on <a href=\"/projects/tasks/tasks/r/{taskRecord["id"]}/details\">[{taskRecord["key"]}] {taskRecord["subject"]}</a>";
-				var relatedRecords = new List<string>() { taskRecord["id"].ToString(), record["id"].ToString() };
-				if (projectId != null)
-				{
-					relatedRecords.Add(projectId.ToString());
-				}
-				relatedRecords.AddRange(taskWatchersList);
+				var feedItem = ProjectCommentRules.BuildFeedItem(taskRecord["id"].ToString(), taskRecord["key"]?.ToString(),
+					taskRecord["subject"]?.ToString(), record["id"].ToString(), projectId?.ToString(), taskWatchersList);
 
 				var body = new Web.Services.RenderService().GetSnippetFromHtml((string)record["body"]);
-				var scope = new List<string>() { "projects" };
-				new FeedItemService().Create(id: Guid.NewGuid(), createdBy: SecurityContext.CurrentUser.Id, subject: subject,
-					body: body, relatedRecords: relatedRecords, scope: scope, type: "comment");
+				new FeedItemService().Create(id: Guid.NewGuid(), createdBy: SecurityContext.CurrentUser.Id, subject: feedItem.Subject,
+					body: body, relatedRecords: feedItem.RelatedRecords, scope: feedItem.Scope, type: feedItem.Type);
 			}
 
 		}
 
 		public void PostCreateApiHookLogic(string entityName, EntityRecord record)
 		{
-			Guid? commentCreator = null;
-			if (record.Properties.ContainsKey("created_by") && record["created_by"] != null && record["created_by"] is Guid) {
-				commentCreator = (Guid)record["created_by"];
-			}
+			Guid? commentCreator = CommentScopeRules.ResolveCommentCreator(record.Properties.ContainsKey("created_by") ? record["created_by"] : null);
 			if (commentCreator == null)
 				return;
 
-			if (!record.Properties.ContainsKey("l_scope") || record["l_scope"] == null || !((string)record["l_scope"]).Contains("projects"))
+			if (!record.Properties.ContainsKey("l_scope") || record["l_scope"] == null || !CommentScopeRules.IsProjectScope((string)record["l_scope"]))
 				return;
 
-			if (record.Properties.ContainsKey("l_related_records") && record["l_related_records"] != null && (string)record["l_related_records"] != "")
+			if (record.Properties.ContainsKey("l_related_records") && record["l_related_records"] != null && CommentScopeRules.HasRelatedRecords((string)record["l_related_records"]))
 			{
 				var relatedRecordGuid = JsonConvert.DeserializeObject<List<Guid>>((string)record["l_related_records"]);
 				var taskEqlCommand = "SELECT *,$user_nn_task_watchers.id from task WHERE ";
-				var filterStringList = new List<string>();
-				var taskEqlParams = new List<EqlParameter>();
-				var index = 1;
-				foreach (var taskGuid in relatedRecordGuid)
-				{
-					var paramName = "taskId" + index;
-					filterStringList.Add($" id = @{paramName} ");
-					taskEqlParams.Add(new EqlParameter(paramName, taskGuid));
-					index++;
-				}
-				taskEqlCommand += String.Join(" OR ", filterStringList);
+				var taskFilter = RelatedTaskFilter.Build(relatedRecordGuid);
+				var taskEqlParams = taskFilter.Parameters.Select(x => new EqlParameter(x.Key, x.Value)).ToList();
+				taskEqlCommand += taskFilter.WhereClause;
 				var relatedTaskRecords = new EqlCommand(taskEqlCommand, taskEqlParams).Execute();
-				var watchRelation = new EntityRelationManager().Read("user_nn_task_watchers").Object;
+				var watchRelation = new EntityRelationManager().Read(CommentWatcherRules.WatchRelationName).Object;
 				if (watchRelation == null)
-					throw new Exception("Watch relation not found");
+					throw new Exception(CommentWatcherRules.WatchRelationNotFoundMessage);
 
 				foreach (var task in relatedTaskRecords)
 				{
-					if (task.Properties.ContainsKey("$user_nn_task_watchers") && task["$user_nn_task_watchers"] != null && task["$user_nn_task_watchers"] is List<EntityRecord>)
+					var hasWatcherList = task.Properties.ContainsKey("$user_nn_task_watchers") && task["$user_nn_task_watchers"] != null && task["$user_nn_task_watchers"] is List<EntityRecord>;
+					if (hasWatcherList)
 					{
-						var watcherIdList = ((List<EntityRecord>)task["$user_nn_task_watchers"]).Select(x=> (Guid)x["id"]).ToList();
-						if (!watcherIdList.Contains(commentCreator.Value)){
+						var watcherIds = ((List<EntityRecord>)task["$user_nn_task_watchers"]).Select(x=> (Guid)x["id"]);
+						if (CommentWatcherRules.ShouldAddCreatorAsWatcher(commentCreator.Value, hasWatcherList, watcherIds)){
 							//Create relation
 							var createRelResponse = new RecordManager().CreateRelationManyToManyRecord(watchRelation.Id, commentCreator.Value, (Guid)task["id"]);
 							if (!createRelResponse.Success)

@@ -58,6 +58,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebVella.Erp.Plugins.Travel
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebVella.Erp.Site.TravelERP", "WebVella.Erp.Site.TravelERP\WebVella.Erp.Site.TravelERP.csproj", "{C2D3E4F5-A6B7-8901-CDEF-123456789012}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebVella.Erp.Plugins.Project.Domain", "WebVella.Erp.Plugins.Project.Domain\WebVella.Erp.Plugins.Project.Domain.csproj", "{D7A1E3B2-6C4F-4E8A-9B1D-2F5C8A3E7D41}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebVella.Erp.Plugins.Project.Domain.Tests", "WebVella.Erp.Plugins.Project.Domain.Tests\WebVella.Erp.Plugins.Project.Domain.Tests.csproj", "{E8B2F4C3-7D5A-4F9B-8C2E-3A6D9B4F8E52}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -140,6 +144,14 @@ Global
 		{C2D3E4F5-A6B7-8901-CDEF-123456789012}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C2D3E4F5-A6B7-8901-CDEF-123456789012}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C2D3E4F5-A6B7-8901-CDEF-123456789012}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D7A1E3B2-6C4F-4E8A-9B1D-2F5C8A3E7D41}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D7A1E3B2-6C4F-4E8A-9B1D-2F5C8A3E7D41}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D7A1E3B2-6C4F-4E8A-9B1D-2F5C8A3E7D41}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D7A1E3B2-6C4F-4E8A-9B1D-2F5C8A3E7D41}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E8B2F4C3-7D5A-4F9B-8C2E-3A6D9B4F8E52}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E8B2F4C3-7D5A-4F9B-8C2E-3A6D9B4F8E52}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E8B2F4C3-7D5A-4F9B-8C2E-3A6D9B4F8E52}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E8B2F4C3-7D5A-4F9B-8C2E-3A6D9B4F8E52}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

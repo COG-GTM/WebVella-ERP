@@ -8,6 +8,7 @@ using WebVella.Erp.Api;
 using WebVella.Erp.Api.Models;
 using WebVella.Erp.Eql;
 using WebVella.Erp.Exceptions;
+using WebVella.Erp.Plugins.Project.Domain.Tasks;
 using WebVella.Erp.Plugins.Project.Model;
 using WebVella.Erp.Recurrence;
 using WebVella.Erp.Web.Models;
@@ -38,21 +39,19 @@ namespace WebVella.Erp.Plugins.Project.Services
 				throw new Exception("Task with this Id was not found");
 
 			var taskRecord = getTaskResponse.Object.Data.First();
-			subject = (string)taskRecord["subject"];
-			var projectAbbr = "";
+			var taskSubject = (string)taskRecord["subject"];
+			subject = taskSubject;
+			TaskProjectInfo projectInfo = null;
 			var status = "";
 			var type = "";
 			if (((List<EntityRecord>)taskRecord["$project_nn_task"]).Any())
 			{
 				var projectRecord = ((List<EntityRecord>)taskRecord["$project_nn_task"]).First();
-				if (projectRecord != null && projectRecord.Properties.ContainsKey("abbr"))
-				{
-					projectAbbr = (string)projectRecord["abbr"];
-				}
 				if (projectRecord != null)
 				{
-					projectId = (Guid)projectRecord["id"];
-					projectOwnerId = (Guid?)projectRecord["owner_id"];
+					var hasAbbr = projectRecord.Properties.ContainsKey("abbr");
+					var abbr = hasAbbr ? (string)projectRecord["abbr"] : null;
+					projectInfo = new TaskProjectInfo((Guid)projectRecord["id"], (Guid?)projectRecord["owner_id"], hasAbbr, abbr);
 				}
 			}
 			if (((List<EntityRecord>)taskRecord["$task_status_1n_task"]).Any())
@@ -72,8 +71,12 @@ namespace WebVella.Erp.Plugins.Project.Services
 				}
 			}
 
+			var calculation = TaskKeyCalculator.Calculate(taskSubject, (decimal)taskRecord["number"], projectInfo);
+			projectId = calculation.ProjectId;
+			projectOwnerId = calculation.ProjectOwnerId;
+
 			patchRecord["id"] = taskId;
-			patchRecord["key"] = projectAbbr + "-" + ((decimal)taskRecord["number"]).ToString("N0"); ;
+			patchRecord["key"] = calculation.Key;
 
 			return patchRecord;
 		}
@@ -112,63 +115,24 @@ namespace WebVella.Erp.Plugins.Project.Services
 			}
 
 			var eqlCommand = $"SELECT {selectedFields} from task ";
-			var eqlParams = new List<EqlParameter>();
-			eqlParams.Add(new EqlParameter("currentDateStart", DateTime.Now.Date));
-			eqlParams.Add(new EqlParameter("currentDateEnd", DateTime.Now.Date.AddDays(1)));
-
-			var whereFilters = new List<string>();
-
-			// Start time
-			if (type == TasksDueType.StartTimeDue)
-				whereFilters.Add("(start_time < @currentDateEnd OR start_time = null)");
-			if (type == TasksDueType.StartTimeNotDue)
-				whereFilters.Add("start_time > @currentDateEnd");
-
-			// End time
-			if (type == TasksDueType.EndTimeOverdue)
-				whereFilters.Add("end_time < @currentDateStart");
-			if (type == TasksDueType.EndTimeDueToday)
-				whereFilters.Add("(end_time >= @currentDateStart AND end_time < @currentDateEnd)");
-			if (type == TasksDueType.EndTimeNotDue)
-				whereFilters.Add("(end_time >= @currentDateEnd OR end_time = null)");
-
-			// Project and user
-			if (projectId != null && userId != null)
-			{
-				whereFilters.Add("$project_nn_task.id = @projectId AND owner_id = @userId");
-				eqlParams.Add(new EqlParameter("projectId", projectId));
-				eqlParams.Add(new EqlParameter("userId", userId));
-			}
-			else if (projectId != null)
-			{
-				whereFilters.Add("$project_nn_task.id = @projectId");
-				eqlParams.Add(new EqlParameter("projectId", projectId));
-			}
-			else if (userId != null)
-			{
-				whereFilters.Add("owner_id = @userId");
-				eqlParams.Add(new EqlParameter("userId", userId));
-			}
+			var plan = TaskQueueFilter.Build((TaskQueueDueType)(int)type, projectId, userId, DateTime.Now);
+			var eqlParams = plan.Parameters.Select(x => new EqlParameter(x.Name, x.Value)).ToList();
+			var whereFilters = new List<string>(plan.WhereFilters);
 
 			//Status open
-			if (type != TasksDueType.All)
+			if (plan.ExcludeClosedStatuses)
 			{
 				var taskStatuses = new TaskService().GetTaskStatuses();
-				var closedStatusHashset = new HashSet<Guid>();
+				var statusInfos = new List<TaskStatusInfo>();
 				foreach (var taskStatus in taskStatuses)
 				{
-					if ((bool)taskStatus["is_closed"])
-					{
-						closedStatusHashset.Add((Guid)taskStatus["id"]);
-					}
+					var isClosed = (bool)taskStatus["is_closed"];
+					statusInfos.Add(new TaskStatusInfo(isClosed ? (Guid)taskStatus["id"] : Guid.Empty, isClosed));
 				}
-				var index = 1;
-				foreach (var key in closedStatusHashset)
+				foreach (var exclusion in TaskQueueFilter.BuildClosedStatusExclusions(statusInfos))
 				{
-					var paramName = "status" + index;
-					whereFilters.Add($"status_id <> @{paramName}");
-					eqlParams.Add(new EqlParameter(paramName, key));
-					index++;
+					whereFilters.Add(exclusion.Filter);
+					eqlParams.Add(new EqlParameter(exclusion.Parameter.Name, exclusion.Parameter.Value));
 				}
 			}
 
@@ -177,31 +141,11 @@ namespace WebVella.Erp.Plugins.Project.Services
 				eqlCommand += " WHERE " + string.Join(" AND ", whereFilters);
 			}
 
-
 			//Order
-			switch (type)
-			{
-				case TasksDueType.All:
-					// No sort for optimization purposes
-					break;
-				case TasksDueType.EndTimeOverdue:
-					eqlCommand += $" ORDER BY end_time ASC, priority DESC";
-					break;
-				case TasksDueType.EndTimeDueToday:
-					eqlCommand += $" ORDER BY priority DESC";
-					break;
-				case TasksDueType.EndTimeNotDue:
-					eqlCommand += $" ORDER BY end_time ASC, priority DESC";
-					break;
-				case TasksDueType.StartTimeDue:
-					eqlCommand += $" ORDER BY end_time ASC, priority DESC";
-					break;
-				case TasksDueType.StartTimeNotDue:
-					eqlCommand += $" ORDER BY end_time ASC, priority DESC";
-					break;
-				default:
-					throw new Exception("Unknown TasksDueType");
-			}
+			if (!plan.IsKnownDueType)
+				throw new Exception(TaskQueueFilter.UnknownDueTypeMessage);
+			if (plan.OrderByClause != null)
+				eqlCommand += plan.OrderByClause;
 
 
 			//Limit
@@ -220,12 +164,9 @@ namespace WebVella.Erp.Plugins.Project.Services
 			color = "#fff";
 
 			var priorityOptions = ((SelectField)new EntityManager().ReadEntity("task").Object.Fields.First(x => x.Name == "priority")).Options;
-			var recordPriority = priorityOptions.FirstOrDefault(x => x.Value == priorityValue);
-			if (recordPriority != null)
-			{
-				iconClass = recordPriority.IconClass;
-				color = recordPriority.Color;
-			}
+			var style = TaskPriorityStyleResolver.Resolve(priorityValue, priorityOptions.Select(x => new TaskPriorityOption(x.Value, x.IconClass, x.Color)));
+			iconClass = style.IconClass;
+			color = style.Color;
 
 		}
 
@@ -299,33 +240,15 @@ namespace WebVella.Erp.Plugins.Project.Services
 
 		public void PreCreateRecordPageHookLogic(string entityName, EntityRecord record, List<ErrorModel> errors)
 		{
-			if (!record.Properties.ContainsKey("$project_nn_task.id"))
+			var hasProjectField = record.Properties.ContainsKey(TaskValidationRules.ProjectFieldKey);
+			var selectedProjectCount = hasProjectField ? ((List<Guid>)record[TaskValidationRules.ProjectFieldKey]).Count : 0;
+			foreach (var error in TaskValidationRules.ValidateProjectSelectionOnCreate(hasProjectField, selectedProjectCount))
 			{
 				errors.Add(new ErrorModel()
 				{
-					Key = "$project_nn_task.id",
-					Message = "Project is not specified."
+					Key = error.Key,
+					Message = error.Message
 				});
-			}
-			else
-			{
-				var projectRecord = (List<Guid>)record["$project_nn_task.id"];
-				if (projectRecord.Count == 0)
-				{
-					errors.Add(new ErrorModel()
-					{
-						Key = "$project_nn_task.id",
-						Message = "Project is not specified."
-					});
-				}
-				else if (projectRecord.Count > 1)
-				{
-					errors.Add(new ErrorModel()
-					{
-						Key = "$project_nn_task.id",
-						Message = "More than one project is selected."
-					});
-				}
 			}
 		}
 
@@ -341,30 +264,13 @@ namespace WebVella.Erp.Plugins.Project.Services
 				throw new Exception(updateResponse.Message);
 
 			//Set the initial watchers list - project lead, creator, owner
-			var watchers = new List<Guid>();
-			{
-				var fieldName = "owner_id";
-				if (record.Properties.ContainsKey(fieldName) && record[fieldName] != null)
-				{
-					var userId = (Guid)record[fieldName];
-					if (!watchers.Contains(userId))
-						watchers.Add(userId);
-				}
-			}
-			{
-				var fieldName = "created_by";
-				if (record.Properties.ContainsKey(fieldName) && record[fieldName] != null)
-				{
-					var userId = (Guid)record[fieldName];
-					if (!watchers.Contains(userId))
-						watchers.Add(userId);
-				}
-			}
-			if (projectOwnerId != null)
-			{
-				if (!watchers.Contains(projectOwnerId.Value))
-					watchers.Add(projectOwnerId.Value);
-			}
+			Guid? ownerId = null;
+			if (record.Properties.ContainsKey("owner_id") && record["owner_id"] != null)
+				ownerId = (Guid)record["owner_id"];
+			Guid? createdBy = null;
+			if (record.Properties.ContainsKey("created_by") && record["created_by"] != null)
+				createdBy = (Guid)record["created_by"];
+			var watchers = TaskValidationRules.BuildInitialWatchers(ownerId, createdBy, projectOwnerId);
 
 			//Create relations
 			var watchRelation = new EntityRelationManager().Read("user_nn_task_watchers").Object;
@@ -419,13 +325,8 @@ namespace WebVella.Erp.Plugins.Project.Services
 					}
 				}
 
-				if (record.Properties.ContainsKey("$project_nn_task.id") && record["$project_nn_task.id"] != null)
-				{
-					if (record["$project_nn_task.id"] is Guid)
-						newProjectId = (Guid)record["$project_nn_task.id"];
-					if (record["$project_nn_task.id"] is string)
-						newProjectId = new Guid(record["$project_nn_task.id"].ToString());
-				}
+				if (record.Properties.ContainsKey("$project_nn_task.id"))
+					newProjectId = TaskValidationRules.ParseGuidOrString(record["$project_nn_task.id"]);
 
 				if (oldRecord.Properties.ContainsKey("$user_nn_task_watchers") && oldRecord["$user_nn_task_watchers"] is List<EntityRecord>)
 				{
@@ -437,7 +338,7 @@ namespace WebVella.Erp.Plugins.Project.Services
 				}
 
 
-				if (oldProjectId != null && newProjectId != null && oldProjectId != newProjectId)
+				if (TaskValidationRules.IsProjectChange(oldProjectId, newProjectId))
 				{
 					var recMan = new RecordManager();
 					var relations = new EntityRelationManager().Read().Object;
@@ -456,23 +357,18 @@ namespace WebVella.Erp.Plugins.Project.Services
 						throw new Exception(addRelResponse.Message);
 
 					//change key
-					record["key"] = projectAbbr + "-" + ((decimal)oldRecord["number"]).ToString("N0");
+					record["key"] = TaskKeyCalculator.CalculateKey(projectAbbr, (decimal)oldRecord["number"]);
 
 					var projectEqlResult = new EqlCommand("SELECT id,owner_id FROM project WHERE id = @projectId",new EqlParameter("projectId", newProjectId)).Execute();
 					Guid? projectOwnerId = null;
 					if (projectEqlResult != null && ((List<EntityRecord>)projectEqlResult).Any())
 					{
 						var newProjectRecord = ((List<EntityRecord>)projectEqlResult).First();
-						if (newProjectRecord.Properties.ContainsKey("owner_id") && newProjectRecord["owner_id"] != null)
-						{
-							if (newProjectRecord["owner_id"] is Guid)
-								projectOwnerId = (Guid)newProjectRecord["owner_id"];
-							if (newProjectRecord["owner_id"] is string)
-								projectOwnerId = new Guid(newProjectRecord["owner_id"].ToString());
-						}
+						if (newProjectRecord.Properties.ContainsKey("owner_id"))
+							projectOwnerId = TaskValidationRules.ParseGuidOrString(newProjectRecord["owner_id"]);
 					}
 					//check if the new project owner is in the watcher list and add it if not
-					if (projectOwnerId != null && !taskWatcherIdList.Contains(projectOwnerId.Value))
+					if (TaskValidationRules.ShouldAddWatcher(projectOwnerId, taskWatcherIdList))
 					{
 						var watcherTaskRel = relations.First(x => x.Name == "user_nn_task_watchers");
 						if (watcherTaskRel == null)
@@ -518,7 +414,7 @@ namespace WebVella.Erp.Plugins.Project.Services
 						}
 					}
 				}
-				if (!watchers.Contains((Guid)record["owner_id"]))
+				if (TaskValidationRules.ShouldAddWatcher((Guid)record["owner_id"], watchers))
 				{
 					var watchRelation = new EntityRelationManager().Read("user_nn_task_watchers").Object;
 					if (watchRelation == null)

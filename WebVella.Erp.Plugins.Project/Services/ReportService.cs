@@ -5,6 +5,7 @@ using System.Linq;
 using WebVella.Erp.Api.Models;
 using WebVella.Erp.Eql;
 using WebVella.Erp.Exceptions;
+using WebVella.Erp.Plugins.Project.Domain.Reports;
 
 namespace WebVella.Erp.Plugins.Project.Services
 {
@@ -14,29 +15,23 @@ namespace WebVella.Erp.Plugins.Project.Services
 		{
 			ValidationException valEx = new ValidationException();
 
-			if (month > 12 || month <= 0)
-				valEx.AddError("month", "Invalid month.");
-
-			if (year <= 0)
-				valEx.AddError("year", "Invalid year.");
-
 			List<EqlParameter> eqlParams;
-			if (accountId.HasValue)
+			var validationErrors = TimelogReportValidator.Validate(year, month, accountId, id =>
 			{
-				eqlParams = new List<EqlParameter>() { new EqlParameter("id", accountId.Value) };
+				eqlParams = new List<EqlParameter>() { new EqlParameter("id", id) };
 				var eqlResult = new EqlCommand("SELECT * FROM account WHERE id = @id ", eqlParams).Execute();
-				if (!eqlResult.Any())
-					valEx.AddError("accountId", $"Account with ID:{accountId} not found.");
-			}
+				return eqlResult.Any();
+			});
+			foreach (var error in validationErrors)
+				valEx.AddError(error.Key, error.Message);
 
 			valEx.CheckAndThrow();
 
 			/// load timelog records from database
-			DateTime fromDate = new DateTime(year, month, 1);
-			DateTime toDate = new DateTime(year, month, DateTime.DaysInMonth(year, month));
+			var dateWindow = MonthDateWindow.For(year, month);
 			eqlParams = new List<EqlParameter>() {
-				new EqlParameter("from_date", fromDate),
-				new EqlParameter("to_date", toDate),
+				new EqlParameter("from_date", dateWindow.FromDate),
+				new EqlParameter("to_date", dateWindow.ToDate),
 				new EqlParameter("scope", "projects" ),
 			};
 			string eql = @"SELECT id,is_billable,l_related_records,minutes FROM timelog 
@@ -45,15 +40,13 @@ namespace WebVella.Erp.Plugins.Project.Services
 							  l_scope CONTAINS @scope";
 			var timelogRecords = new EqlCommand(eql, eqlParams).Execute();
 
-			HashSet<Guid> setOfTasksWithTimelog = new HashSet<Guid>();
-			foreach(var timelog in timelogRecords )
+			HashSet<Guid> setOfTasksWithTimelog = TimelogReportAggregator.CollectTaskIds(timelogRecords, timelog =>
 			{
 				List<Guid> ids = JsonConvert.DeserializeObject<List<Guid>>((string)timelog["l_related_records"]);
-				Guid taskId = ids[0];
+				Guid taskId = TimelogReportAggregator.GetTaskId(ids);
 				timelog["task_id"] = taskId;
-				if (!setOfTasksWithTimelog.Contains(taskId))
-					setOfTasksWithTimelog.Add(taskId);
-			}
+				return taskId;
+			});
 
 			//load all tasks 
 			eqlParams = new List<EqlParameter>();
@@ -61,72 +54,44 @@ namespace WebVella.Erp.Plugins.Project.Services
 			var tasks = new EqlCommand(eql, eqlParams).Execute();
 
 			//process tasks - split records for projects - filter by account - filter by timelog
-			EntityRecordList processedTasks = new EntityRecordList();
-			foreach (var task in tasks)
+			List<TaskProjectRow<EntityRecord, EntityRecord>> taskRows;
+			try
 			{
-				//skip task that has no timelog record
-				if (!setOfTasksWithTimelog.Contains((Guid)task["id"]))
-					continue;
-
-				List<EntityRecord> taskProjects = (List<EntityRecord>)task["$project_nn_task"];
-				//skip tasks with no project
-				if (taskProjects.Count == 0)
-					continue;
-
-				//split tasks to projects if more than one project is related to task
-				foreach (var project in taskProjects)
-				{
-					if (accountId != null )
-					{
-						if(project["account_id"] == null){
-							throw new Exception("There is a project without an account");
-						}
-
-						if ((Guid)project["account_id"] == accountId)
-						{
-							task["project"] = project;
-							processedTasks.Add(task);
-						}
-					}
-					else
-					{
-						task["project"] = project;
-						processedTasks.Add(task);
-					}
-				}
+				taskRows = TimelogReportAggregator.SplitTasksByProject<EntityRecord, EntityRecord>(
+					tasks,
+					setOfTasksWithTimelog,
+					accountId,
+					task => (Guid)task["id"],
+					task => (List<EntityRecord>)task["$project_nn_task"],
+					project => (Guid?)project["account_id"]);
 			}
-			tasks = processedTasks;
-			tasks.TotalCount = processedTasks.Count;
-
-
+			catch (ProjectWithoutAccountException ex)
+			{
+				throw new Exception(ex.Message);
+			}
 
 			List<EntityRecord> result = new List<EntityRecord>();
-			foreach(var task in tasks )
+			foreach (var row in taskRows)
 			{
+				var task = row.Task;
+				var project = row.Project;
 				EntityRecord rec = new EntityRecord();
 				rec["task_id"] = task["id"];
-				rec["project_id"] = ((EntityRecord)task["project"])["id"];
+				rec["project_id"] = project["id"];
 				rec["task_subject"] = task["subject"];
-				rec["project_name"] = ((EntityRecord)task["project"])["name"];
+				rec["project_name"] = project["name"];
 				rec["task_type"] = ((List<EntityRecord>)task["$task_type_1n_task"])[0]["label"];
 				rec["billable_minutes"] = (decimal)0;
 				rec["non_billable_minutes"] = (decimal)0;
 
-
-				//during development
-				//rec["task"] = task;
-				//rec["project"] = (EntityRecord)task["project"];
-				
-				foreach (var timelog in timelogRecords)
-				{
-					if ((Guid)timelog["task_id"] != (Guid)task["id"])
-						continue;
-
-					if ((bool)timelog["is_billable"])
-						rec["billable_minutes"] = (decimal)rec["billable_minutes"] + (decimal)timelog["minutes"];
-					else
-						rec["non_billable_minutes"] = (decimal)rec["non_billable_minutes"] + (decimal)timelog["minutes"];
-				}
+				var totals = TimelogReportAggregator.SumMinutes(
+					timelogRecords,
+					(Guid)task["id"],
+					timelog => (Guid)timelog["task_id"],
+					timelog => (bool)timelog["is_billable"],
+					timelog => (decimal)timelog["minutes"]);
+				rec["billable_minutes"] = totals.BillableMinutes;
+				rec["non_billable_minutes"] = totals.NonBillableMinutes;
 
 				result.Add(rec);
 			}

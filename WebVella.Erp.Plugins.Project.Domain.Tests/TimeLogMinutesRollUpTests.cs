@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using Xunit;
 
 namespace WebVella.Erp.Plugins.Project.Domain.Tests
@@ -51,7 +52,7 @@ namespace WebVella.Erp.Plugins.Project.Domain.Tests
 		[InlineData("-20", "0", "0")]
 		public void RemoveMinutes_SubtractsAndClampsAtZero(string taskMinutes, string loggedMinutes, string expected)
 		{
-			Assert.Equal(decimal.Parse(expected), TimeLogMinutesRollUp.RemoveMinutes(decimal.Parse(taskMinutes), decimal.Parse(loggedMinutes)));
+			Assert.Equal(decimal.Parse(expected, CultureInfo.InvariantCulture), TimeLogMinutesRollUp.RemoveMinutes(decimal.Parse(taskMinutes, CultureInfo.InvariantCulture), decimal.Parse(loggedMinutes, CultureInfo.InvariantCulture)));
 		}
 
 		[Theory]
@@ -66,7 +67,7 @@ namespace WebVella.Erp.Plugins.Project.Domain.Tests
 		[InlineData("0.4", "0", "0")]
 		public void RemoveMinutes_RoundsHalfToEvenBeforeClamping(string taskMinutes, string loggedMinutes, string expected)
 		{
-			Assert.Equal(decimal.Parse(expected), TimeLogMinutesRollUp.RemoveMinutes(decimal.Parse(taskMinutes), decimal.Parse(loggedMinutes)));
+			Assert.Equal(decimal.Parse(expected, CultureInfo.InvariantCulture), TimeLogMinutesRollUp.RemoveMinutes(decimal.Parse(taskMinutes, CultureInfo.InvariantCulture), decimal.Parse(loggedMinutes, CultureInfo.InvariantCulture)));
 		}
 
 		[Fact]

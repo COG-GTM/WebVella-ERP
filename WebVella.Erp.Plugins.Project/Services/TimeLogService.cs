@@ -8,6 +8,7 @@ using WebVella.Erp.Api.Models;
 using WebVella.Erp.Database;
 using WebVella.Erp.Eql;
 using WebVella.Erp.Exceptions;
+using WebVella.Erp.Plugins.Project.Domain;
 using WebVella.Erp.Web.Models;
 using WebVella.Erp.Web.Pages.Application;
 
@@ -66,10 +67,8 @@ namespace WebVella.Erp.Plugins.Project.Services
 				var eqlCommand = "SELECT id,created_by FROM timelog WHERE id = @recordId";
 				var eqlParams = new List<EqlParameter>() { new EqlParameter("recordId", recordId) };
 				var eqlResult = new EqlCommand(eqlCommand, eqlParams).Execute();
-				if (!eqlResult.Any())
-					throw new Exception("RecordId not found");
-				if ((Guid)eqlResult[0]["created_by"] != SecurityContext.CurrentUser.Id)
-					throw new Exception("Only the author can delete its comment");
+				TimeLogRules.RequireRecordFound(eqlResult.Any());
+				TimeLogRules.RequireAuthor((Guid)eqlResult[0]["created_by"], SecurityContext.CurrentUser.Id);
 			}
 
 			var deleteResponse = new RecordManager().DeleteRecord("timelog", recordId);
@@ -114,27 +113,9 @@ namespace WebVella.Erp.Plugins.Project.Services
 			if (page != null && page.Id == TIMETRACK_PAGE_ID && currentUser != null)
 			{
 				var postForm = pageModel.PageContext.HttpContext.Request.Form;
-				if (String.IsNullOrWhiteSpace(postForm["task_id"]))
-					throw new Exception("Task Id is required");
-				if (String.IsNullOrWhiteSpace(postForm["minutes"]))
-					throw new Exception("Minutes is required");
-				if (String.IsNullOrWhiteSpace(postForm["logged_on"]))
-					throw new Exception("Logged on is required");
-
-				Guid taskId = Guid.Empty;
-				DateTime loggedOn = DateTime.MinValue;
-				string body = !String.IsNullOrWhiteSpace(postForm["body"]) ? postForm["body"].ToString() : "";
-				bool isBillable = true;
-				int minutes = 0;
-
-				if (Guid.TryParse(postForm["task_id"].ToString(), out Guid outTaskId))
-					taskId = outTaskId;
-				if (DateTime.TryParse(postForm["logged_on"].ToString(), out DateTime outLoggedOn))
-					loggedOn = outLoggedOn;
-				if (Boolean.TryParse(postForm["is_billable"].ToString(), out Boolean outBillable))
-					isBillable = outBillable;
-				if (int.TryParse(postForm["minutes"].ToString(), out int outMinutes))
-					minutes = outMinutes;
+				var form = TimeTrackForm.Parse(postForm["task_id"].ToString(), postForm["minutes"].ToString(), postForm["logged_on"].ToString(),
+					postForm["is_billable"].ToString(), postForm["body"].ToString());
+				Guid taskId = form.TaskId;
 
 				var eqlCommand = " SELECT *,$project_nn_task.id from task WHERE id = @taskId";
 				var eqlParams = new List<EqlParameter>() { new EqlParameter("taskId", taskId) };
@@ -158,10 +139,9 @@ namespace WebVella.Erp.Plugins.Project.Services
 					{
 						connection.BeginTransaction();
 						new TaskService().StopTaskTimelog(taskId);
-						if (postForm["minutes"].ToString() != "0")
+						if (form.ShouldLogTime)
 						{
-							//Zero minutes are not logged
-							new TimeLogService().Create(null, currentUser.Id, DateTime.Now, loggedOn, minutes, isBillable, body, scope, relatedRecords);
+							new TimeLogService().Create(null, currentUser.Id, DateTime.Now, form.LoggedOn, form.Minutes, form.IsBillable, form.Body, scope, relatedRecords);
 						}
 						connection.CommitTransaction();
 						return new RedirectResult("/projects/track-time/track-time/a/track-time");
@@ -180,26 +160,21 @@ namespace WebVella.Erp.Plugins.Project.Services
 
 		public void PreCreateApiHookLogic(string entityName, EntityRecord record, List<ErrorModel> errors)
 		{
-			if (!record.Properties.ContainsKey("id"))
-				throw new Exception("Hook exception: timelog id field not found in record");
+			TimeLogRules.RequireIdField(record.Properties.ContainsKey("id"));
 
 			Guid recordId = (Guid)record["id"];
-			var isProjectTimeLog = false;
 			var relatedTaskRecords = new EntityRecordList();
 			//Get timelog
-			if (record["l_scope"] != null && ((string)record["l_scope"]).Contains("projects"))
-			{
-				isProjectTimeLog = true;
-			}
+			var isProjectTimeLog = TimeLogRules.IsProjectTimeLog((string)record["l_scope"]);
 
 			if (isProjectTimeLog)
 			{
 
-				if (record["l_related_records"] != null && (string)record["l_related_records"] != "")
+				if (TimeLogRules.HasRelatedRecords((string)record["l_related_records"]))
 				{
 					try
 					{
-						var relatedRecordGuid = JsonConvert.DeserializeObject<List<Guid>>((string)record["l_related_records"]);
+						var relatedRecordGuid = TimeLogRules.ParseRelatedRecordIds((string)record["l_related_records"]);
 						var taskEqlCommand = "SELECT *,$project_nn_task.id, $user_nn_task_watchers.id FROM task WHERE ";
 						var filterStringList = new List<string>();
 						var taskEqlParams = new List<EqlParameter>();
@@ -220,24 +195,16 @@ namespace WebVella.Erp.Plugins.Project.Services
 					}
 				}
 
-				if (!relatedTaskRecords.Any())
-					throw new Exception("Hook exception: This timelog does not have an existing taskId");
+				TimeLogRules.RequireRelatedTask(relatedTaskRecords.Any());
 
 				var taskRecord = relatedTaskRecords[0]; //Currently should be related only to 1 task in projects
+				var taskId = (Guid)taskRecord["id"];
+				var isBillable = (bool)record["is_billable"];
+				var minutesField = TimeLogRules.GetMinutesField(isBillable);
+				var loggedTypeString = TimeLogRules.GetLoggedTypeLabel(isBillable);
 				var patchRecord = new EntityRecord();
-				patchRecord["id"] = (Guid)taskRecord["id"];
-				var loggedTypeString = "billable";
-				if ((bool)record["is_billable"])
-				{
-					patchRecord["x_billable_minutes"] = (decimal)taskRecord["x_billable_minutes"] + (int)record["minutes"];
-				}
-				else
-				{
-					patchRecord["x_nonbillable_minutes"] = (decimal)taskRecord["x_nonbillable_minutes"] + (int)record["minutes"];
-					loggedTypeString = "non-billable";
-				}
-				//Null timelog_started_on
-				patchRecord["timelog_started_on"] = null;
+				foreach (var patchField in TimeLogRules.BuildTaskPatchOnCreate(taskId, isBillable, (decimal)taskRecord[minutesField], (int)record["minutes"]))
+					patchRecord[patchField.Key] = patchField.Value;
 
 				var updateResponse = new RecordManager(executeHooks: false).UpdateRecord("task", patchRecord);
 				if (!updateResponse.Success)
@@ -280,11 +247,9 @@ namespace WebVella.Erp.Plugins.Project.Services
 
 		public void PreDeleteApiHookLogic(string entityName, EntityRecord record, List<ErrorModel> errors)
 		{
-			if (!record.Properties.ContainsKey("id"))
-				throw new Exception("Hook exception: timelog id field not found in record");
+			TimeLogRules.RequireIdField(record.Properties.ContainsKey("id"));
 
 			Guid recordId = (Guid)record["id"];
-			var isProjectTimeLog = false;
 			var timelogRecord = new EntityRecord();
 			var relatedTaskRecords = new EntityRecordList();
 			//Get timelog
@@ -292,23 +257,19 @@ namespace WebVella.Erp.Plugins.Project.Services
 			var eqlCommand = "SELECT * from timelog WHERE id = @recordId";
 			var eqlParams = new List<EqlParameter>() { new EqlParameter("recordId", recordId) };
 			var eqlResult = new EqlCommand(eqlCommand, eqlParams).Execute();
-			if (!eqlResult.Any())
-				throw new Exception("Hook exception: timelog with this id was not found");
+			TimeLogRules.RequireTimeLogFound(eqlResult.Any());
 
 			timelogRecord = eqlResult[0];
-			if (timelogRecord["l_scope"] != null && ((string)timelogRecord["l_scope"]).Contains("projects"))
-			{
-				isProjectTimeLog = true;
-			}
+			var isProjectTimeLog = TimeLogRules.IsProjectTimeLog((string)timelogRecord["l_scope"]);
 
 			if (isProjectTimeLog)
 			{
 
-				if (timelogRecord["l_related_records"] != null && (string)timelogRecord["l_related_records"] != "")
+				if (TimeLogRules.HasRelatedRecords((string)timelogRecord["l_related_records"]))
 				{
 					try
 					{
-						var relatedRecordGuid = JsonConvert.DeserializeObject<List<Guid>>((string)timelogRecord["l_related_records"]);
+						var relatedRecordGuid = TimeLogRules.ParseRelatedRecordIds((string)timelogRecord["l_related_records"]);
 						var taskEqlCommand = "SELECT *,$project_nn_task.id from task WHERE ";
 						var filterStringList = new List<string>();
 						var taskEqlParams = new List<EqlParameter>();
@@ -330,24 +291,12 @@ namespace WebVella.Erp.Plugins.Project.Services
 				}
 
 				var taskRecord = relatedTaskRecords[0]; //Currently should be related only to 1 task in projects
+				var taskId = (Guid)taskRecord["id"];
+				var isBillable = (bool)timelogRecord["is_billable"];
+				var minutesField = TimeLogRules.GetMinutesField(isBillable);
 				var patchRecord = new EntityRecord();
-				patchRecord["id"] = (Guid)taskRecord["id"];
-				if ((bool)timelogRecord["is_billable"])
-				{
-					var result = Math.Round((decimal)taskRecord["x_billable_minutes"] - (decimal)timelogRecord["minutes"]);
-					if (result > 0)
-						patchRecord["x_billable_minutes"] = result;
-					else
-						patchRecord["x_billable_minutes"] = 0;
-				}
-				else
-				{
-					var result = Math.Round((decimal)taskRecord["x_nonbillable_minutes"] - (decimal)timelogRecord["minutes"]);
-					if (result > 0)
-						patchRecord["x_nonbillable_minutes"] = result;
-					else
-						patchRecord["x_nonbillable_minutes"] = 0;
-				}
+				foreach (var patchField in TimeLogRules.BuildTaskPatchOnDelete(taskId, isBillable, (decimal)taskRecord[minutesField], (decimal)timelogRecord["minutes"]))
+					patchRecord[patchField.Key] = patchField.Value;
 				var updateResponse = new RecordManager(executeHooks: false).UpdateRecord("task", patchRecord);
 				if (!updateResponse.Success)
 					throw new Exception(updateResponse.Message);

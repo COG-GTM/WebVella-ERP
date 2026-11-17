@@ -1,4 +1,4 @@
-﻿<!--{"sort_order":5, "name": "get-involved", "label": "Get involved"}-->
+﻿<!--{"sort_order":6, "name": "get-involved", "label": "Get involved"}-->
 # Get involved
 
 We appreciate your interest in our project. We value all the help we can get in making WebVella ERP even better. Thank you in advance!

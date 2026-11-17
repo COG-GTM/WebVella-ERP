@@ -9,7 +9,7 @@ The project is available only as an ASP.NET Core application.
 
 | technology | supported version |
 |------------|-------------------|
-| ASP.NET Core | v.9 |
+| ASP.NET Core | v.10 (`net10.0`) |
 | PostgreSQL | v.16 |
 | Bootstrap CSS | v.4 |
 

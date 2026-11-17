@@ -9,13 +9,13 @@
 [![GitHub Repo stars](https://img.shields.io/github/stars/WebVella/WebVella-ERP?style=for-the-badge)](https://github.com/WebVella/WebVella-ERP/stargazers)
 [![Nuget version](https://img.shields.io/nuget/v/WebVella.ERP?style=for-the-badge)](https://www.nuget.org/packages/WebVella.ERP)
 [![Nuget download](https://img.shields.io/nuget/dt/WebVella.ERP?style=for-the-badge)](https://www.nuget.org/packages/WebVella.ERP)
-[![WebVella Document Templates License](https://img.shields.io/badge/MIT-green?style=for-the-badge)](https://github.com/WebVella/WebVella-ERP/blob/master/LICENSE.txt)
+[![License](https://img.shields.io/badge/Apache--2.0-green?style=for-the-badge)](https://github.com/WebVella/WebVella-ERP/blob/master/LICENSE.txt)
 
 ---
 
 WebVella ERP 
 ======
-**WebVella ERP** is a free and open-source web software, that targets extreme customization and plugability in service of any business data management needs. It is build upon our experience, best practices and the newest available technologies. Currently it targets ASP.NET Core 9. Our database of choice is PostgreSQL 16. Targets Linux or Windows as host OS. Currently tested only on Windows.
+**WebVella ERP** is a free and open-source web software, that targets extreme customization and plugability in service of any business data management needs. It is build upon our experience, best practices and the newest available technologies. Currently it targets .NET 10 (ASP.NET Core 10). Our database of choice is PostgreSQL 16. Targets Linux or Windows as host OS. Currently tested only on Windows.
 
 If you want this project to continue or just like it, we will greatly appreciate your support of the project by: 
 * giving it a "star" 
@@ -30,6 +30,28 @@ Related repositories
 
 [WebVella-TagHelpers](https://github.com/WebVella/TagHelpers)
 
+
+## Architecture
+
+![WebVella ERP architecture](docs/diagrams/architecture.png)
+
+See [docs/developer/introduction/architecture.md](docs/developer/introduction/architecture.md) for the layers, plugins, host sites and startup sequence. The diagram source is [docs/diagrams/architecture.dot](docs/diagrams/architecture.dot).
+
+## Repository layout
+
+| Path | What it is |
+|------|------------|
+| `WebVella.Erp` | Core library: entities, records, relations, EQL, hooks, background jobs, PostgreSQL access |
+| `WebVella.Erp.Web` | ASP.NET Core UI layer: Razor Pages, tag helpers, page components, `AddErp()` / `UseErp()` |
+| `WebVella.Erp.Plugins.*` | Plugins: SDK, Next, Project, Mail, Crm, MicrosoftCDM, TravelERP |
+| `WebVella.Erp.Site*` | Runnable host sites; each registers a set of plugins and has its own `Config.json` |
+| `WebVella.Erp.ConsoleApp` | Console sample that uses the core without a web host |
+| `WebVella.Erp.WebAssembly` | Blazor WebAssembly client (separate; no ERP project references) |
+| `docs/` | Developer documentation |
+
+## Getting started
+
+Install the .NET 10 SDK and PostgreSQL 16. Then build `WebVella.ERP3.sln`, set the connection string in the `Config.json` of the site you want to run (for example `WebVella.Erp.Site`), and start that site. See [Getting started](docs/developer/introduction/getting-started.md) for the full steps.
 
 ### Third party libraries
 * see [LIBRARIES](https://github.com/WebVella/WebVella-ERP/blob/master/LIBRARIES.md) files

@@ -3,20 +3,9 @@
 
 ## Setting up environment
  
-1. We use Windows 10 and Windows 2012 Server as development operating systems. Update your windows before continue installing required software. 
-*Other operating systems - when we get more experience we will extend this document.*
- 
-2. The WebVella ERP project is a set of .NET Core application and libraries. 
-If you want to run, develop and extend it, first you need .NET Core framework installed.
-At the moment of creating this document we use .NET Core version 2.1.
-Go to https://dotnet.microsoft.com/download download latest SDK and Runtime and install both.
+1. Install the [.NET 10 SDK](https://dotnet.microsoft.com/download). Every project in `WebVella.ERP3.sln` targets `net10.0`. You can build with Visual Studio 2026, JetBrains Rider or the `dotnet` CLI.
 
-3. You will also need the Microsoft Visual Studio to build and run the project. 
-We use Visual Studio Community 2017 version and it can be downloaded from https://visualstudio.microsoft.com/downloads/ . 
-Note its free for open-source contributors like ourself. Once its installed, check notifications panel for updates and install them.
-
-4. WebVella ERP use PotgreSQL database. You can go download the latest version from https://www.postgresql.org/download/ . 
-If you don't have any management tool for PostgreSQL install also pgAdmin. You can download it from https://www.pgadmin.org/download/ . 
+2. Install [PostgreSQL 16](https://www.postgresql.org/download/). [pgAdmin](https://www.pgadmin.org/download/) is optional, for managing the database.
 
 ## Start with seed project
 
@@ -37,10 +26,11 @@ necessary structure and data.
 2. Create an empty PostgreSQL database for the erp. When erp starts for first time, it will create 
 necessary structure and data.
 
-3. Open the solution file WebVella.ERP3.sln with Visual Studio and build the solution. 
-Set as startup  (if is not already set). Edit the Config.json file 
-in project WebVella.Erp.Site and set the correct sql connection string. 
-You may also want to change other configuration values (like timezone), but is not required.
+3. Build the solution (`dotnet build WebVella.ERP3.sln`, or open it in your IDE).
+Choose a host site as the startup project. `WebVella.Erp.Site` registers only the SDK plugin. The other sites, such as
+`WebVella.Erp.Site.Project`, `WebVella.Erp.Site.Mail`, `WebVella.Erp.Site.Crm` and `WebVella.Erp.Site.TravelERP`, also register their plugin
+(see [Architecture](architecture.md)). Edit that site's `Config.json` and set `Settings:ConnectionString`.
+You may also want to change other values, like `TimeZoneName` or `EnableBackgroundJobs`, but you don't have to.
 
 4. Run the application. The project is configured to open browser open on login screen when started. 
 All erp functionality requires authentication. Use the default account email "**erp@webvella.com**" and password "**erp**"

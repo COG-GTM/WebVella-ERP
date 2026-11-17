@@ -149,7 +149,8 @@ namespace WebVella.Erp.Eql
 				case "select_statement":
 					resultTree.RootNode = new EqlSelectNode();
 					BuildSelectTree((EqlSelectNode)resultTree.RootNode, rootQueryNode);
-					AddUniqueOrderTiebreaker((EqlSelectNode)resultTree.RootNode);
+					if (!Settings.Distinct)
+						AddUniqueOrderTiebreaker((EqlSelectNode)resultTree.RootNode);
 					break;
 				default:
 					throw new EqlException("Not supported operator in abstract tree building.");

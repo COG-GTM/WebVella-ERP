@@ -11,7 +11,12 @@ namespace WebVella.Erp.Eql.Tests
 
 		private static List<string> OrderBy(string eql, params EqlParameter[] parameters)
 		{
-			var tree = new EqlBuilder(eql).Build(parameters.ToList()).Tree;
+			return OrderBy(eql, null, parameters);
+		}
+
+		private static List<string> OrderBy(string eql, EqlSettings settings, params EqlParameter[] parameters)
+		{
+			var tree = new EqlBuilder(eql, null, settings).Build(parameters.ToList()).Tree;
 			var orderBy = ((EqlSelectNode)tree.RootNode).OrderBy;
 			return orderBy == null ? new List<string>() : orderBy.Fields.Select(x => $"{x.FieldName} {x.Direction}").ToList();
 		}
@@ -33,6 +38,13 @@ namespace WebVella.Erp.Eql.Tests
 		public void PagedQuery_AlreadyOrderedById_IsUnchanged()
 		{
 			Assert.Equal(new List<string> { "id DESC" }, OrderBy("SELECT * FROM task ORDER BY id DESC PAGE 1 PAGESIZE 10"));
+		}
+
+		[Fact]
+		public void PagedDistinctQuery_IsUnchanged()
+		{
+			var settings = new EqlSettings { Distinct = true, IncludeTotal = false };
+			Assert.Equal(new List<string> { "end_time ASC" }, OrderBy("SELECT end_time FROM task ORDER BY end_time PAGE 1 PAGESIZE 10", settings));
 		}
 
 		[Fact]

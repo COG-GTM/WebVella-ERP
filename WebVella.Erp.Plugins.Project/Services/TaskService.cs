@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -309,7 +310,7 @@ namespace WebVella.Erp.Plugins.Project.Services
 			}
 			else
 			{
-				var projectRecord = (List<Guid>)record["$project_nn_task.id"];
+				var projectRecord = ToGuidList(record["$project_nn_task.id"]);
 				if (projectRecord.Count == 0)
 				{
 					errors.Add(new ErrorModel()
@@ -327,6 +328,39 @@ namespace WebVella.Erp.Plugins.Project.Services
 					});
 				}
 			}
+		}
+
+		internal static List<Guid> ToGuidList(object value)
+		{
+			var result = new List<Guid>();
+			if (value == null)
+				return result;
+			if (value is Guid guid)
+			{
+				result.Add(guid);
+				return result;
+			}
+			if (value is string text)
+			{
+				foreach (var part in text.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+					result.Add(Guid.Parse(part));
+				return result;
+			}
+			if (value is JValue jValue)
+				return ToGuidList(jValue.Value);
+			if (value is System.Collections.IEnumerable items)
+			{
+				foreach (var item in items)
+				{
+					var itemValue = item is JValue jItem ? jItem.Value : item;
+					if (itemValue is Guid itemGuid)
+						result.Add(itemGuid);
+					else if (itemValue != null)
+						result.Add(Guid.Parse(itemValue.ToString()));
+				}
+				return result;
+			}
+			throw new Exception($"Cannot convert value of type {value.GetType().Name} to a list of ids.");
 		}
 
 		public void PostCreateApiHookLogic(string entityName, EntityRecord record)

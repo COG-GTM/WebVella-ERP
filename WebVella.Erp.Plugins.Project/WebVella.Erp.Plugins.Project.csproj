@@ -60,4 +60,9 @@
 	<ItemGroup>
 	  <Folder Include="wwwroot\js\wv-post-list\" />
 	</ItemGroup>
+
+	<ItemGroup>
+		<InternalsVisibleTo Include="WebVella.Erp.Tests" />
+	</ItemGroup>
+
 </Project>

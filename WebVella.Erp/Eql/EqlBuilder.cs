@@ -149,6 +149,7 @@ namespace WebVella.Erp.Eql
 				case "select_statement":
 					resultTree.RootNode = new EqlSelectNode();
 					BuildSelectTree((EqlSelectNode)resultTree.RootNode, rootQueryNode);
+					AddUniqueOrderTiebreaker((EqlSelectNode)resultTree.RootNode);
 					break;
 				default:
 					throw new EqlException("Not supported operator in abstract tree building.");
@@ -300,6 +301,18 @@ namespace WebVella.Erp.Eql
 						throw new EqlException("Unknown term in select command syntax parse tree.");
 				}
 			}
+		}
+
+		//rows tied on the ORDER BY fields have no stable order, so LIMIT/OFFSET pages can repeat or skip them
+		private static void AddUniqueOrderTiebreaker(EqlSelectNode selectNode)
+		{
+			if (selectNode.Page == null && selectNode.PageSize == null)
+				return;
+			if (selectNode.OrderBy == null || selectNode.OrderBy.Fields.Count == 0)
+				return;
+			if (selectNode.OrderBy.Fields.Any(x => x.FieldName == "id"))
+				return;
+			selectNode.OrderBy.Fields.Add(new EqlOrderByFieldNode { FieldName = "id", Direction = "ASC" });
 		}
 
 		private void BuildOrderByNode(EqlOrderByNode orderByNode, ParseTreeNode parseTreeNode)

@@ -1,0 +1,67 @@
+// WebVella ERP architecture (master). Render with ./render.sh
+digraph webvella {
+  graph [rankdir=LR, fontname="DejaVu Sans", fontsize=18, nodesep=0.35, ranksep=0.9, pad=0.3, newrank=true,
+         label="WebVella ERP on master: host sites, plugins and core libraries (all net10.0)\nsolid arrow = plugin registered with UseErpPlugin<T>; dashed = project referenced but registration commented out, or optional", labelloc=t];
+  node  [shape=box, style="rounded,filled", fontname="DejaVu Sans", fontsize=16, fillcolor=white, color="#555555"];
+  edge  [color="#666666", arrowsize=0.7, fontname="DejaVu Sans", fontsize=12];
+
+  subgraph cluster_hosts {
+    label="Host projects\n(Startup.cs + Config.json;\nAddErp, UseErpPlugin<T>, UseErp)";
+    style="rounded,filled"; fillcolor="#e8f1fb"; color="#4a7ab5";
+    site      [label="WebVella.Erp.Site\n(default startup)"];
+    site_sdk  [label="Site.Sdk"];
+    site_next [label="Site.Next"];
+    site_proj [label="Site.Project"];
+    site_crm  [label="Site.Crm"];
+    site_mail [label="Site.Mail"];
+    site_cdm  [label="Site.MicrosoftCDM"];
+    site_trav [label="Site.TravelERP"];
+  }
+
+  subgraph cluster_plugins {
+    label="Plugins\n(ErpPlugin subclasses,\ndated schema patches)";
+    style="rounded,filled"; fillcolor="#eaf6ea"; color="#4f9a4f";
+    p_sdk  [label="Plugins.SDK\napp: sdk\nentity/page/job admin"];
+    p_next [label="Plugins.Next\nshared entities:\naccount, contact, case,\nproject, task ..."];
+    p_proj [label="Plugins.Project\napp: projects"];
+    p_crm  [label="Plugins.Crm\n(shell, patches\ncommented out)"];
+    p_mail [label="Plugins.Mail\napp: mail\nSMTP queue (MailKit)"];
+    p_cdm  [label="Plugins.MicrosoftCDM\n(shell, patches\ncommented out)"];
+    p_trav [label="Plugins.TravelERP\napp: travelerp\nAPI controllers"];
+  }
+
+  web [label="WebVella.Erp.Web\nRazor Pages, TagHelpers,\nPage Components,\nApp / Page / Sitemap services,\nJWT_OR_COOKIE auth,\nhosted job services\n(ErpJobScheduleService,\nErpJobProcessService)",
+       fillcolor="#f3e9fb", color="#8a5cb5"];
+
+  core [label="WebVella.Erp (core)\nEntity / Record / Relation\nmanagers, EQL (Irony),\nrecord hooks,\nScheduleManager, JobManager,\nJobPool (20 threads),\nLISTEN/NOTIFY notifications,\nFTS, file storage",
+        fillcolor="#fdeaea", color="#b55c5c"];
+
+  pg   [label="PostgreSQL 16\nsystem tables, rec_* entity tables, files", shape=cylinder, fillcolor="#fafafa"];
+  smtp [label="SMTP server", shape=component, fillcolor="#fafafa"];
+  fs   [label="File system / blob storage\n(optional, Config.json)", shape=folder, fillcolor="#fafafa"];
+
+  console [label="WebVella.Erp.ConsoleApp\nconsole host, no web layer\n(sample: init engine, EQL, hooks)", fillcolor="#fff6e0"];
+
+  wasm [label="WebVella.Erp.WebAssembly\nBlazor WASM client (standalone,\nno ERP project references)", fillcolor="#f0f0f0", style="rounded,filled,dashed"];
+
+  site      -> p_sdk;
+  site_sdk  -> p_next [style=dashed];
+  site_mail -> p_next [style=dashed];
+  site_sdk  -> p_sdk;
+  site_next -> p_next;
+  site_proj -> {p_next p_sdk p_proj};
+  site_crm  -> {p_next p_sdk p_crm};
+  site_mail -> {p_sdk p_mail};
+  site_cdm  -> {p_sdk p_cdm};
+  site_trav -> {p_sdk p_trav};
+
+  {p_sdk p_next p_proj p_crm p_mail p_cdm p_trav} -> web;
+  web -> core;
+  console -> core;
+  core -> pg [label=" Npgsql 9", fontsize=12];
+  core -> fs [style=dashed];
+  p_mail -> smtp [style=dashed];
+
+  {rank=same; web; wasm; console}
+  console -> web -> wasm [style=invis];
+}

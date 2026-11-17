@@ -9,4 +9,15 @@ All available applications are presented on the platform's home page:
 
 ![sdk home](/doc-images/sdk-home.png)
 
+## Applications shipped in this repository
 
+Plugins create applications in their schema patches. The applications you see depend on which plugins the host site registers (see [Architecture](../introduction/architecture.md)).
+
+| Application (`name`) | Created by | Available in sites |
+|----------------------|------------|--------------------|
+| `sdk` | `WebVella.Erp.Plugins.SDK` | every site that registers the SDK plugin (all except `WebVella.Erp.Site.Next`) |
+| `projects` | `WebVella.Erp.Plugins.Project` | `WebVella.Erp.Site.Project` |
+| `mail` | `WebVella.Erp.Plugins.Mail` | `WebVella.Erp.Site.Mail` |
+| `travelerp` | `WebVella.Erp.Plugins.TravelERP` | `WebVella.Erp.Site.TravelERP` |
+
+`WebVella.Erp.Plugins.Next` adds shared entities but no application. `WebVella.Erp.Plugins.Crm` and `WebVella.Erp.Plugins.MicrosoftCDM` have their patches commented out, so they create no application yet. `WebVella.Erp.ConsoleApp` has no UI, so it shows no applications.

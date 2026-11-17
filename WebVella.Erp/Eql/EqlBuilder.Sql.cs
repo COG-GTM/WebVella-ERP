@@ -727,6 +727,10 @@ LEFT OUTER JOIN  {0} {1} ON {2}.{3} = {4}.{5}";
 							if (param == null) throw new EqlException($"WHERE: Parameter '{paramName}' not found.");
 							//param.Value = "%" + param.Value + "%";
 
+							//ILIKE '%%' matches every non-null value, so skip the per-row pattern match
+							if (param.Value == null || param.Value == DBNull.Value || (param.Value is string strValue && strValue.Length == 0))
+								return $" ( {firstOperandString} IS NOT NULL ) ";
+
 							return $" ( {firstOperandString}  ILIKE  CONCAT ( '%' , {secondOperandString} , '%' ) )";
 						}
 					}

@@ -1,0 +1,41 @@
+using System;
+using System.Collections.Generic;
+using WebVella.Erp.Api;
+
+namespace WebVella.Erp.Plugins.Project
+{
+	public partial class ProjectPlugin : ErpPlugin
+	{
+		//the "target date" column of these task lists was bound to created_on or the removed target_date field
+		public static readonly IReadOnlyList<Guid> TaskListTargetDateNodeIds = new[]
+		{
+			new Guid("ad9c357f-e620-4ed1-9593-d76c97019677"), //all
+			new Guid("bd05d5ef-0ab4-48b0-a40e-5959875d071b"), //open
+			new Guid("8d244aa4-ad6b-464f-87e9-37a55fd18d19"), //no-owner
+			new Guid("e83f6542-f9f8-4fec-aeb8-48731951f182"), //project tasks
+		};
+
+		public const string TaskListTargetDateOptions = @"{
+  ""is_visible"": """",
+  ""label_mode"": ""3"",
+  ""label_text"": """",
+  ""mode"": ""4"",
+  ""value"": ""{\""type\"":\""0\"",\""string\"":\""RowRecord.end_time\"",\""default\"":\""\""}"",
+  ""name"": ""end_time"",
+  ""class"": """",
+  ""show_icon"": ""false"",
+  ""connected_entity_id"": """",
+  ""connected_record_id_ds"": """",
+  ""access_override_ds"": """",
+  ""required_override_ds"": """",
+  ""ajax_api_url_ds"": """"
+}";
+
+		private static void Patch20261117(EntityManager entMan, EntityRelationManager relMan, RecordManager recMan)
+		{
+			var pageService = new WebVella.Erp.Web.Services.PageService();
+			foreach (var id in TaskListTargetDateNodeIds)
+				pageService.UpdatePageBodyNodeOptions(id, TaskListTargetDateOptions, WebVella.Erp.Database.DbContext.Current.Transaction);
+		}
+	}
+}

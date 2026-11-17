@@ -17,6 +17,16 @@ namespace WebVella.Erp.Web.Components
 	{
 		protected ErpRequestContext ErpRequestContext { get; set; }
 
+		//record values arrive in UTC; the date part must be taken in the app time zone or it can fall a day early
+		public static DateTime? ToAppDate(object value)
+		{
+			if (value is DateTime dateTime)
+				return dateTime.ConvertToAppDate();
+			if (value is string text && DateTime.TryParse(text, out DateTime parsed))
+				return parsed.ConvertToAppDate();
+			return null;
+		}
+
 		public PcFieldDate([FromServices]ErpRequestContext coreReqCtx)
 		{
 			ErpRequestContext = coreReqCtx;
@@ -150,14 +160,7 @@ namespace WebVella.Erp.Web.Components
 					}
 					ViewBag.IsVisible = isVisible;
 
-					var valueObj = context.DataModel.GetPropertyValueByDataSource(options.Value);
-					if(valueObj is DateTime)
-						model.Value = valueObj as DateTime?;
-					else if(valueObj is string)
-					{
-						if(DateTime.TryParse(valueObj as string,out DateTime outDateTime))
-							model.Value = outDateTime.ConvertToAppDate();					
-					}
+					model.Value = ToAppDate(context.DataModel.GetPropertyValueByDataSource(options.Value));
 
 				}
 

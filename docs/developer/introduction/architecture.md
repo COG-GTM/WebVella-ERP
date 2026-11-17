@@ -1,4 +1,4 @@
-<!--{"sort_order":3, "name": "architecture", "label": "Architecture"}-->
+﻿<!--{"sort_order":3, "name": "architecture", "label": "Architecture"}-->
 # Architecture
 
 This page describes how the projects in `WebVella.ERP3.sln` fit together on `master`. Every project targets `net10.0`.
@@ -11,7 +11,7 @@ The diagram source is [`docs/diagrams/architecture.dot`](../../diagrams/architec
 
 | Layer | Projects | What it does |
 |-------|----------|--------------|
-| Core | `WebVella.Erp` | Entity, record and relation managers over PostgreSQL (Npgsql 9). Also the EQL parser (Irony), record hooks, background jobs (`ScheduleManager`, `JobManager`, `JobPool`), LISTEN/NOTIFY notifications, full-text search and file storage. It has no ASP.NET dependency. |
+| Core | `WebVella.Erp` | Entity, record and relation managers over PostgreSQL (Npgsql 9). Also the EQL parser (Irony), record hooks, background jobs (`ScheduleManager`, `JobManager`, `JobPool`), LISTEN/NOTIFY notifications, full-text search and file storage. It has no web UI, but it references the `Microsoft.AspNetCore.App` shared framework, so the console host still needs the ASP.NET Core runtime. |
 | Web | `WebVella.Erp.Web` | Razor Pages, tag helpers, page components, data sources, the app/page/sitemap services and the middleware. `AddErp()` registers `IErpService` and the two hosted job services (`ErpJobScheduleService`, `ErpJobProcessService`). `UseErp()` initializes the engine, system entities, the home page, background jobs and the plugins. |
 | Plugins | `WebVella.Erp.Plugins.*` | Razor class libraries. Each defines a subclass of `ErpPlugin` and applies its schema through dated patch files (`<Plugin>.<yyyyMMdd>.cs`). Patches run when the plugin initializes, and only those newer than the plugin's stored version are applied. |
 | Hosts | `WebVella.Erp.Site*`, `WebVella.Erp.ConsoleApp` | Executables that compose the layers. Each site has its own `Startup.cs` and `Config.json` and decides which plugins to register. |
@@ -52,7 +52,7 @@ The diagram source is [`docs/diagrams/architecture.dot`](../../diagrams/architec
 ## Data and runtime services
 
 - **Storage**: system metadata, entity records (`rec_<entity>` tables) and files live in one PostgreSQL database, set by `Settings:ConnectionString`. Set `EnableFileSystemStorage` or `EnableCloudBlobStorage` to store file contents outside the database.
-- **Background jobs**: see [Background jobs](../background-jobs/overview.md). They are on unless `Settings:EnableBackgroundJobs` is `false`, which is the value in the committed `Config.json` files.
+- **Background jobs**: see [Background jobs](../background-jobs/overview.md). They are on unless `Settings:EnableBackgroundJobs` (or the legacy `EnableBackgroungJobs`) is `false`. The committed configs turn them off for `WebVella.Erp.Site`, `Site.Sdk` and the ConsoleApp, and on for the other sites.
 - **Notifications**: `NotificationContext` uses PostgreSQL `LISTEN`/`NOTIFY` to send record-change notifications between processes.
 
 ## Who wrote it

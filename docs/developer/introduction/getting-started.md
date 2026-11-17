@@ -30,7 +30,7 @@ necessary structure and data.
 Choose a host site as the startup project. `WebVella.Erp.Site` registers only the SDK plugin. The other sites, such as
 `WebVella.Erp.Site.Project`, `WebVella.Erp.Site.Mail`, `WebVella.Erp.Site.Crm` and `WebVella.Erp.Site.TravelERP`, also register their plugin
 (see [Architecture](architecture.md)). Edit that site's `Config.json` and set `Settings:ConnectionString`.
-You may also want to change other values, like `TimeZoneName` or `EnableBackgroundJobs`, but you don't have to.
+You may also want to change other values, like `TimeZoneName` or the background-jobs switch, but you don't have to.
 
 4. Run the application. The project is configured to open browser open on login screen when started. 
 All erp functionality requires authentication. Use the default account email "**erp@webvella.com**" and password "**erp**"

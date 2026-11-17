@@ -15,7 +15,7 @@ Definitions of the used terms are:
 
 ## Turning background jobs on and off
 
-Background jobs are on unless `Settings:EnableBackgroundJobs` is `false` in the site's `Config.json`. The committed `Config.json` files set it to `false`, so set it to `true` when you want jobs to run. The misspelled key `EnableBackgroungJobs` still works for older configs.
+Background jobs are on unless `Settings:EnableBackgroundJobs` is `false` in the site's `Config.json`. If that key is missing, the misspelled legacy key `EnableBackgroungJobs` is used instead. In the committed configs, jobs are off in `WebVella.Erp.Site`, `WebVella.Erp.Site.Sdk` and `WebVella.Erp.ConsoleApp`. They are on in the Next, Project, Crm, Mail, MicrosoftCDM and TravelERP sites, which set `EnableBackgroungJobs` to `true`.
 
 ## Jobs shipped with the plugins
 

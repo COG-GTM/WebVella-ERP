@@ -36,6 +36,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebVella.Erp.Plugins.Crm", 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebVella.Erp.Plugins.Mail", "WebVella.Erp.Plugins.Mail\WebVella.Erp.Plugins.Mail.csproj", "{B3C27A05-5AD4-4D09-9AA0-E772D29C7155}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebVella.Erp.Plugins.Project.Tests", "WebVella.Erp.Plugins.Project.Tests\WebVella.Erp.Plugins.Project.Tests.csproj", "{9D4E6B2A-1C5F-4A8E-B7D3-F2A0C8E61B59}"
+EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebVella.Erp.Site.Mail", "WebVella.Erp.Site.Mail\WebVella.Erp.Site.Mail.csproj", "{158BF214-4FE5-47E2-8B09-23D5F092D7DD}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebVella.Erp.Site.Project", "WebVella.Erp.Site.Project\WebVella.Erp.Site.Project.csproj", "{6739491D-04B0-45AC-81B8-35FB9B6A87C5}"
@@ -96,6 +98,10 @@ Global
 		{B3C27A05-5AD4-4D09-9AA0-E772D29C7155}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B3C27A05-5AD4-4D09-9AA0-E772D29C7155}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B3C27A05-5AD4-4D09-9AA0-E772D29C7155}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9D4E6B2A-1C5F-4A8E-B7D3-F2A0C8E61B59}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9D4E6B2A-1C5F-4A8E-B7D3-F2A0C8E61B59}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9D4E6B2A-1C5F-4A8E-B7D3-F2A0C8E61B59}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9D4E6B2A-1C5F-4A8E-B7D3-F2A0C8E61B59}.Release|Any CPU.Build.0 = Release|Any CPU
 		{158BF214-4FE5-47E2-8B09-23D5F092D7DD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{158BF214-4FE5-47E2-8B09-23D5F092D7DD}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{158BF214-4FE5-47E2-8B09-23D5F092D7DD}.Release|Any CPU.ActiveCfg = Release|Any CPU

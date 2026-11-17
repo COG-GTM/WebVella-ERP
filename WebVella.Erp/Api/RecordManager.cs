@@ -251,6 +251,16 @@ namespace WebVella.Erp.Api
 			return CreateRecord(entity, record);
 		}
 
+		//post-create hooks can patch the new record (e.g. a calculated key or search text), so return it as stored
+		public static QueryResponse ReloadAfterPostCreateHooks(QueryResponse created, Func<QueryResponse> find)
+		{
+			var reloaded = find();
+			if (reloaded == null || !reloaded.Success || reloaded.Object?.Data == null || reloaded.Object.Data.Count == 0)
+				return created;
+			reloaded.Message = created.Message;
+			return reloaded;
+		}
+
 		public QueryResponse CreateRecord(Entity entity, EntityRecord record)
 		{
 
@@ -867,7 +877,10 @@ namespace WebVella.Erp.Api
 						response.Message = "Record was created successfully";
 
 						if (hooksExists && executeHooks)
+						{
 							RecordHookManager.ExecutePostCreateRecordHooks(entity.Name, response.Object.Data[0]);
+							response = ReloadAfterPostCreateHooks(response, () => Find(entityQuery));
+						}
 					}
 
 					if (isTransactionActive)

@@ -602,6 +602,16 @@ namespace WebVella.Erp.Database
             return results.FirstOrDefault();
         }
 
+        internal static void RemoveTrailingComma(StringBuilder sql)
+        {
+            int end = sql.Length;
+            while (end > 0 && char.IsWhiteSpace(sql[end - 1]))
+                end--;
+            if (end > 0 && sql[end - 1] == ',')
+                end--;
+            sql.Length = end;
+        }
+
         public List<EntityRecord> Find(EntityQuery query)
         {
             Entity entity = entMan.ReadEntity(query.EntityName).Object;
@@ -1042,7 +1052,7 @@ namespace WebVella.Erp.Database
                         }
                     }
                 }
-                sql.Remove(sql.Length - 3, 3); //remove newline and comma
+                RemoveTrailingComma(sql);
                 sql.AppendLine(END_SELECT);
                 sql.AppendLine(string.Format(FROM, GetTableNameForEntity(entity)));
 

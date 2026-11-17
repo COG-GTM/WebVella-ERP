@@ -79,4 +79,8 @@
 		<TypeScriptSourceRoot />
 	</PropertyGroup>
 
+	<ItemGroup>
+		<InternalsVisibleTo Include="WebVella.Erp.Tests" />
+	</ItemGroup>
+
 </Project>

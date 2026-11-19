@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Newtonsoft.Json;
 using WebVella.Erp.Api;
 using WebVella.Erp.Api.Models;
 using WebVella.Erp.Eql;
@@ -37,11 +38,37 @@ namespace WebVella.Erp.Plugins.Project.DataSource
 				userTimelogs = new EqlCommand(eqlCommand, eqlParams).Execute();
 			}
 
+			var timelogIndexesByRelatedId = new Dictionary<string, List<int>>(StringComparer.Ordinal);
+			var unindexedTimelogIndexes = new List<int>();
+			for (int i = 0; i < userTimelogs.Count; i++)
+			{
+				var relatedIds = ParseRelatedIds(userTimelogs[i]["l_related_records"] == null ? "" : (string)userTimelogs[i]["l_related_records"]);
+				if (relatedIds == null)
+				{
+					unindexedTimelogIndexes.Add(i);
+					continue;
+				}
+				foreach (var relatedId in relatedIds)
+				{
+					if (!timelogIndexesByRelatedId.TryGetValue(relatedId, out var indexes))
+						timelogIndexesByRelatedId[relatedId] = indexes = new List<int>();
+					indexes.Add(i);
+				}
+			}
+
 			foreach (var task in userOpenTasks)
 			{
 				task.Properties.Add("logged_minutes", (int)0);
 				task.Properties.Add("last_logged_on", (DateTime)DateTime.MinValue);
-				var taskTimelogs = userTimelogs.FindAll(x => (x["l_related_records"] == null ? "" : (string)x["l_related_records"]).Contains(task["id"].ToString())).ToList();
+				var taskId = task["id"].ToString();
+				var taskTimelogIndexes = timelogIndexesByRelatedId.TryGetValue(taskId, out var indexedTimelogs) ? indexedTimelogs : new List<int>();
+				if (unindexedTimelogIndexes.Count > 0)
+				{
+					taskTimelogIndexes = taskTimelogIndexes
+						.Concat(unindexedTimelogIndexes.Where(i => (userTimelogs[i]["l_related_records"] == null ? "" : (string)userTimelogs[i]["l_related_records"]).Contains(taskId)))
+						.OrderBy(i => i).ToList();
+				}
+				var taskTimelogs = taskTimelogIndexes.Select(i => userTimelogs[i]).ToList();
 				if (taskTimelogs.Count > 0)
 				{
 					task["logged_minutes"] = (int)(taskTimelogs.Select(x => (decimal)x["minutes"]).Aggregate(func: (aggrResult, x) => aggrResult + x));
@@ -61,6 +88,30 @@ namespace WebVella.Erp.Plugins.Project.DataSource
 			}
 
 			return userOpenTasks.OrderByDescending(x => (DateTime?)x["created_on"]).ToList();
+		}
+
+		//Distinct ids of a JSON array of 36-char GUID strings with no escapes or comments, where a substring match on the raw text
+		//is the same as an exact match on an element; null for anything else, which keeps the substring match
+		private static HashSet<string> ParseRelatedIds(string relatedRecords)
+		{
+			if (relatedRecords.Length == 0)
+				return new HashSet<string>(StringComparer.Ordinal);
+			if (!relatedRecords.All(c => Uri.IsHexDigit(c) || c == '-' || c == '"' || c == '\'' || c == '[' || c == ']' || c == ',' || char.IsWhiteSpace(c)))
+				return null;
+
+			List<string> ids;
+			try
+			{
+				ids = JsonConvert.DeserializeObject<List<string>>(relatedRecords);
+			}
+			catch (JsonException)
+			{
+				return null;
+			}
+			if (ids == null || ids.Any(id => id == null || id.Length != 36 || !id.All(c => c == '-' || Uri.IsHexDigit(c))))
+				return null;
+
+			return new HashSet<string>(ids, StringComparer.Ordinal);
 		}
 	}
 }
